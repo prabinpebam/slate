@@ -35,7 +35,7 @@ const recordSets = new Map([[recordSet.id, recordSet]]);
 
 assert.deepEqual(validateRecordSet(recordSet), []);
 assert.deepEqual(validateCanvasDocument(document, recordSets), []);
-assert.equal(layoutCanvas(document, recordSets).length, 5, "Two groups and three placements should render.");
+assert.equal(layoutCanvas(document, recordSets).nodes.length, 7, "Two groups, three placements, and one enclosure per group holding records.");
 assert.equal(document.placements.filter((placement) => placement.recordRef.recordId === "REC-01").length, 2, "A record may appear in multiple groups.");
 assert.equal(canvasPerspectives(document).length, 1, "Legacy documents expose one normalized perspective.");
 
@@ -58,7 +58,7 @@ const toneDocument = {
   ],
 };
 assert.deepEqual(validateCanvasDocument(toneDocument, recordSets), []);
-const toneNodes = layoutCanvas(toneDocument, recordSets);
+const toneNodes = layoutCanvas(toneDocument, recordSets).nodes;
 for (const id of ["root", "child", "grandchild"]) {
   const node = toneNodes.find((item) => item.id === id);
   assert.equal(node.data.tone, "lilac", `${id} must inherit the tone declared on its ancestor`);
@@ -93,22 +93,65 @@ const sizingDocument = {
 const sizingRecordSets = new Map([[sizingRecordSet.id, sizingRecordSet]]);
 assert.deepEqual(validateRecordSet(sizingRecordSet), []);
 assert.deepEqual(validateCanvasDocument(sizingDocument, sizingRecordSets), []);
-const sizingNodes = layoutCanvas(sizingDocument, sizingRecordSets);
+const sizingNodes = layoutCanvas(sizingDocument, sizingRecordSets).nodes;
 const shortCard = sizingNodes.find((node) => node.id === "sizing-placement-1");
 const longCard = sizingNodes.find((node) => node.id === "sizing-placement-2");
 const sizingGroup = sizingNodes.find((node) => node.id === "sizing-group");
 assert.ok(shortCard.style.width < longCard.style.width, "Each card hugs its own text width.");
 assert.ok(longCard.style.height > shortCard.style.height, "A wrapped title grows only its own card height.");
-assert.ok(sizingGroup.style.width >= longCard.style.width, "A group hugs its widest card.");
+// A group is a tree node, not a container, so its own card is not sized to hold its
+// records. The records sit in the next column, joined by connecting lines.
+assert.ok(sizingGroup.style.height < shortCard.style.height, "A group card is header-sized, not sized to contain its records.");
 assert.ok(
-  sizingGroup.style.height < shortCard.style.height + longCard.style.height + 120,
-  "Packed cards must not reserve a uniform row height for every card.",
+  shortCard.position.x > sizingGroup.position.x + sizingGroup.style.width,
+  "Records are placed to the right of their group, not inside it.",
 );
+const sizingConnectors = layoutCanvas(sizingDocument, sizingRecordSets).connectors;
+assert.equal(sizingConnectors.length, 1, "One connector reaches the record enclosure, not one per record.");
+assert.match(sizingConnectors[0].id, /^sizing-group--records$/, "The connector runs from the group to its record enclosure.");
+assert.match(sizingConnectors[0].d, /^M[\d.-]+ [\d.-]+ C/, "Connectors are drawn as curves between known points.");
+const sizingGraph = layoutCanvas(sizingDocument, sizingRecordSets);
+const enclosure = sizingGraph.nodes.find((node) => node.type === "slateRecordGroup");
+assert.ok(enclosure, "A group's records are wrapped in one enclosure.");
+for (const record of sizingGraph.nodes.filter((node) => node.type === "slateRecord")) {
+  assert.ok(
+    record.position.x >= enclosure.position.x
+      && record.position.y >= enclosure.position.y
+      && record.position.x + record.style.width <= enclosure.position.x + enclosure.style.width
+      && record.position.y + record.style.height <= enclosure.position.y + enclosure.style.height,
+    `${record.id} must sit inside its enclosure`,
+  );
+}
 const overlapping = shortCard.position.x < longCard.position.x + longCard.style.width
   && longCard.position.x < shortCard.position.x + shortCard.style.width
   && shortCard.position.y < longCard.position.y + longCard.style.height
   && longCard.position.y < shortCard.position.y + shortCard.style.height;
 assert.equal(overlapping, false, "Packed cards must never overlap.");
+
+// Spacing must open up at the top of the tree and tighten with depth, so major
+// divisions read before detail.
+const depthDocument = {
+  schemaVersion: 1,
+  id: "depth-canvas",
+  title: "Depth canvas",
+  mode: "readonly",
+  recordSources: [{ id: "example-records", path: "data/example-records.json" }],
+  groups: [
+    { id: "r1", title: "Root one", tone: "aqua", order: 1 },
+    { id: "r2", title: "Root two", tone: "blue", order: 2 },
+    { id: "r1c1", title: "Child one", parentId: "r1", order: 1 },
+    { id: "r1c2", title: "Child two", parentId: "r1", order: 2 },
+  ],
+  placements: [{ id: "depth-p1", groupId: "r1c1", recordRef: { sourceId: "example-records", recordId: "REC-01" } }],
+};
+assert.deepEqual(validateCanvasDocument(depthDocument, recordSets), []);
+const depthGraph = layoutCanvas(depthDocument, recordSets);
+const at = (id) => depthGraph.nodes.find((node) => node.id === id);
+const rootGap = at("r2").position.y - (at("r1").position.y + at("r1").style.height);
+const childGap = at("r1c2").position.y - (at("r1c1").position.y + at("r1c1").style.height);
+assert.ok(rootGap > childGap, `Top-level branches must sit further apart than their children (${rootGap} vs ${childGap})`);
+assert.ok(at("r1c1").position.x > at("r1").position.x, "Each level steps to the right of its parent.");
+assert.equal(at("r1c1").position.x, at("r1c2").position.x, "Siblings share a column.");
 
 const multiPerspectiveDocument = {
   ...document,
@@ -127,7 +170,7 @@ delete multiPerspectiveDocument.presentation;
 assert.deepEqual(validateCanvasDocument(multiPerspectiveDocument, recordSets), []);
 assert.equal(canvasPerspectives(multiPerspectiveDocument).length, 2);
 assert.equal(canvasPerspective(multiPerspectiveDocument, "by-owner").title, "By owner");
-assert.equal(layoutCanvas(multiPerspectiveDocument, recordSets, "by-owner").length, 4, "Selected perspective should control layout nodes.");
+assert.equal(layoutCanvas(multiPerspectiveDocument, recordSets, "by-owner").nodes.length, 5, "Selected perspective should control layout nodes.");
 
 const mutations = [
   ["duplicate records", { ...recordSet, records: [...recordSet.records, recordSet.records[0]] }, validateRecordSet, /duplicates REC-01/],

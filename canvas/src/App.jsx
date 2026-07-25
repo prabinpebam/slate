@@ -2,11 +2,26 @@ import { useEffect, useId, useRef, useState } from "react";
 import {
   Background,
   BackgroundVariant,
+  Handle,
   MiniMap,
+  Position,
   ReactFlow,
   ReactFlowProvider,
+  ViewportPortal,
+  applyNodeChanges,
   useReactFlow,
 } from "@xyflow/react";
+
+// The tree's connecting lines need anchor points. They are visually hidden and never
+// interactive: this canvas is read-only and nothing is connected by hand.
+function TreeHandles() {
+  return (
+    <>
+      <Handle type="target" position={Position.Left} isConnectable={false} className="canvas-handle" />
+      <Handle type="source" position={Position.Right} isConnectable={false} className="canvas-handle" />
+    </>
+  );
+}
 import {
   Check,
   ChevronDown,
@@ -34,6 +49,7 @@ import "./canvas.css";
 
 const nodeTypes = {
   slateGroup: GroupNode,
+  slateRecordGroup: RecordGroupNode,
   slateRecord: RecordNode,
 };
 
@@ -167,6 +183,7 @@ function PerspectiveMenu({ items, value, onChange }) {
 function GroupNode({ data, selected }) {
   return (
     <section className={`canvas-group canvas-group--depth-${data.depth} canvas-tone--${data.tone}${selected ? " is-selected" : ""}`}>
+      <TreeHandles />
       <header className="canvas-group__header">
         <div className="canvas-group__mark" aria-hidden="true" />
         <div className="canvas-group__heading">
@@ -179,10 +196,15 @@ function GroupNode({ data, selected }) {
   );
 }
 
+function RecordGroupNode({ data }) {
+  return <div className={`canvas-record-group canvas-tone--${data.tone}`} aria-hidden="true" />;
+}
+
 function RecordNode({ data, selected }) {
   const state = selected ? " is-selected" : data.related ? " is-related" : "";
   return (
     <article className={`canvas-record canvas-tone--${data.tone}${state}`}>
+      <TreeHandles />
       <div className="canvas-record__eyebrow">
         <span>{data.id}</span>
         <span>{data.kind}</span>
@@ -298,7 +320,12 @@ function CanvasWorkspace({ loaded, themePreference, setThemePreference }) {
   const perspectives = canvasPerspectives(canvasDocument);
   const [perspectiveId, setPerspectiveId] = useState(canvasDocument.defaultPerspectiveId || perspectives[0].id);
   const perspective = canvasPerspective(canvasDocument, perspectiveId);
-  const [nodes, setNodes] = useState(() => layoutCanvas(canvasDocument, recordSets, perspectiveId));
+  const [graph, setGraph] = useState(() => layoutCanvas(canvasDocument, recordSets, perspectiveId));
+  const nodes = graph.nodes;
+  const connectors = graph.connectors;
+  function setNodes(updater) {
+    setGraph((current) => ({ ...current, nodes: typeof updater === "function" ? updater(current.nodes) : updater }));
+  }
   const [selection, setSelection] = useState([]);
   const [outlineOpen, setOutlineOpen] = useState(() => window.innerWidth > 700);
   const [minimapOpen, setMinimapOpen] = useState(() => window.innerWidth > 900);
@@ -365,7 +392,7 @@ function CanvasWorkspace({ loaded, themePreference, setThemePreference }) {
     setSelection([]);
     setQuery("");
     setSearchOpen(false);
-    setNodes(layoutCanvas(canvasDocument, recordSets, nextPerspectiveId));
+    setGraph(layoutCanvas(canvasDocument, recordSets, nextPerspectiveId));
     requestAnimationFrame(() => requestAnimationFrame(fitAll));
   }
 
@@ -467,6 +494,8 @@ function CanvasWorkspace({ loaded, themePreference, setThemePreference }) {
           nodes={nodes}
           edges={[]}
           nodeTypes={nodeTypes}
+          defaultEdgeOptions={{ type: "smoothstep", pathOptions: { borderRadius: 14 }, style: { stroke: "var(--canvas-edge)", strokeWidth: 1.5 }, focusable: false, selectable: false }}
+          elevateNodesOnSelect={false}
           colorMode={document.documentElement.dataset.theme === "dark" ? "dark" : "light"}
           nodesDraggable={false}
           nodesConnectable={false}
@@ -480,6 +509,10 @@ function CanvasWorkspace({ loaded, themePreference, setThemePreference }) {
           maxZoom={2.5}
           selectionOnDrag={false}
           onMove={(_, viewport) => setZoom(viewport.zoom)}
+          // Node measurements come back through this. Without it the nodes still position
+          // themselves, but the connecting lines have no endpoints to route between and
+          // silently do not render.
+          onNodesChange={(changes) => setNodes((current) => applyNodeChanges(changes, current))}
           onSelectionChange={({ nodes: selected }) => setSelection(selected)}
           onNodeClick={(_, node) => selectNode(node.id)}
           onPaneClick={() => { setSearchOpen(false); clearSelection(); }}
@@ -487,6 +520,11 @@ function CanvasWorkspace({ loaded, themePreference, setThemePreference }) {
           aria-label={canvasDocument.title}
         >
           <Background variant={BackgroundVariant.Dots} gap={24} size={1.5} color="var(--canvas-grid)" />
+          <ViewportPortal>
+            <svg className="canvas-connectors" aria-hidden="true">
+              {connectors.map((connector) => <path key={connector.id} d={connector.d} />)}
+            </svg>
+          </ViewportPortal>
           {minimapOpen ? <MiniMap className="canvas-minimap" pannable zoomable nodeStrokeWidth={2} maskColor="var(--canvas-minimap-mask)" /> : null}
         </ReactFlow>
 

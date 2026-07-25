@@ -368,45 +368,68 @@ function ordered(items) {
   return [...items].sort((left, right) => (left.order ?? Number.MAX_SAFE_INTEGER) - (right.order ?? Number.MAX_SAFE_INTEGER) || left.title?.localeCompare(right.title || "") || left.id.localeCompare(right.id));
 }
 
+// Layout is a left-to-right tree, not nested boxes. Past two levels a box inside a box
+// stops being readable at a glance: the eye cannot tell containment from adjacency, and
+// every extra level steals width from the content. Groups and records are drawn as
+// separate cards joined by connecting lines, so the structure is carried by the lines.
+//
+// Spacing narrows with depth. Top-level branches sit far apart so the major divisions
+// read first; deeper siblings tighten, so a subtree reads as one cluster rather than as
+// more separate branches.
+const TREE = {
+  levelGap: [168, 128, 100, 80, 66, 56],
+  siblingGap: [96, 56, 34, 22, 16, 13],
+  recordColumns: 3,
+  groupMinWidth: 176,
+  groupMaxWidth: 300,
+  // A group's records live inside one enclosure. One connector reaches the enclosure
+  // instead of one per record, which would fan out into a spaghetti of lines.
+  recordWrapPadding: 12,
+  recordWrapHeader: 0,
+};
+
+function levelGap(depth) {
+  return TREE.levelGap[Math.min(Math.max(depth, 0), TREE.levelGap.length - 1)];
+}
+
+function siblingGap(depth) {
+  return TREE.siblingGap[Math.min(Math.max(depth, 0), TREE.siblingGap.length - 1)];
+}
+
+function measureGroupCard(group, depth) {
+  const header = measureGroupHeader(group, depth);
+  return {
+    width: Math.round(Math.min(TREE.groupMaxWidth, Math.max(TREE.groupMinWidth, header.width))),
+    height: Math.round(header.height + GROUP_BOX.border * 2),
+  };
+}
+
 export function layoutCanvas(document, recordSets, perspectiveId) {
   const perspective = canvasPerspective(document, perspectiveId);
   const resolvedPlacements = resolveCanvasRecords(document, recordSets, perspective.id);
   const placementsByGroup = Map.groupBy(resolvedPlacements, (placement) => placement.groupId);
   const childGroups = Map.groupBy(perspective.groups.filter((group) => group.parentId), (group) => group.parentId);
   const groupById = new Map(perspective.groups.map((group) => [group.id, group]));
-  const recordColumns = perspective.presentation?.recordColumns || 0;
-  const childColumns = perspective.presentation?.childGroupColumns || 0;
+  const recordColumns = perspective.presentation?.recordColumns || TREE.recordColumns;
   const nodes = [];
+  const connectors = [];
 
-  function countDescendantPlacements(groupId) {
-    return (placementsByGroup.get(groupId)?.length || 0) + (childGroups.get(groupId) || []).reduce((sum, child) => sum + countDescendantPlacements(child.id), 0);
+  // The connecting lines are drawn from the positions this layout already computes, not
+  // routed by the flow library. The library needs measured nodes and handle bounds before
+  // it will draw an edge, which a read-only canvas never produces; and since every
+  // position here is exact, a curve between two known points is both simpler and stable.
+  function connect(id, from, to) {
+    const x1 = from.x + from.width;
+    const y1 = Math.round(from.y + from.height / 2);
+    const x2 = to.x;
+    const y2 = Math.round(to.y + to.height / 2);
+    const bend = Math.max(16, (x2 - x1) * 0.5);
+    connectors.push({ id, d: `M${x1} ${y1} C${x1 + bend} ${y1}, ${x2 - bend} ${y2}, ${x2} ${y2}` });
   }
 
-  function measure(groupId) {
-    const group = groupById.get(groupId);
-    const depth = groupDepth(groupId, groupById);
-    const header = measureGroupHeader(group, depth);
-    const placements = ordered(placementsByGroup.get(groupId) || []).map((placement) => ({
-      placement,
-      ...measureRecordCard(placement.record),
-    }));
-    const children = ordered(childGroups.get(groupId) || []).map((child) => measure(child.id));
-
-    const cards = packBoxes(placements, packWidth(placements, CARD.gap, recordColumns, 900), CARD.gap);
-    const nested = packBoxes(children, packWidth(children, GROUP_BOX.gap, childColumns, 2600), GROUP_BOX.gap);
-    const contentWidth = Math.max(cards.width, nested.width);
-    const contentHeight = cards.height + (cards.height && nested.height ? GROUP_BOX.gap : 0) + nested.height;
-
-    return {
-      group,
-      depth,
-      header,
-      cards,
-      nested,
-      cardsHeight: cards.height,
-      width: Math.round(Math.max(GROUP_BOX.minWidth, header.width, contentWidth + GROUP_BOX.padding * 2 + GROUP_BOX.border * 2)),
-      height: Math.round(header.height + contentHeight + GROUP_BOX.padding + GROUP_BOX.border * 2),
-    };
+  function countDescendantPlacements(groupId) {
+    return (placementsByGroup.get(groupId)?.length || 0)
+      + (childGroups.get(groupId) || []).reduce((sum, child) => sum + countDescendantPlacements(child.id), 0);
   }
 
   // Tone inherits down the whole ancestor chain, not just from the immediate parent.
@@ -422,55 +445,126 @@ export function layoutCanvas(document, recordSets, perspectiveId) {
     return tone;
   }
 
-  function place(layout, position, parentId) {
-    const tone = layout.group.tone || resolveTone(parentId) || "neutral";
+  function build(groupId, depth) {
+    const group = groupById.get(groupId);
+    const card = measureGroupCard(group, depth);
+    const records = ordered(placementsByGroup.get(groupId) || []).map((placement) => ({
+      placement,
+      ...measureRecordCard(placement.record),
+    }));
+    const grid = packBoxes(records, packWidth(records, CARD.gap, recordColumns, recordColumns * CARD.maxWidth), CARD.gap);
+    const wrap = grid.height
+      ? { width: grid.width + TREE.recordWrapPadding * 2, height: grid.height + TREE.recordWrapPadding * 2 }
+      : { width: 0, height: 0 };
+    const children = ordered(childGroups.get(groupId) || []).map((child) => build(child.id, depth + 1));
+
+    const gap = siblingGap(depth + 1);
+    const branches = [];
+    if (wrap.height) branches.push(wrap.height);
+    for (const child of children) branches.push(child.subtreeHeight);
+    const branchHeight = branches.length
+      ? branches.reduce((sum, height) => sum + height, 0) + gap * (branches.length - 1)
+      : 0;
+
+    return { group, depth, card, grid, wrap, children, subtreeHeight: Math.max(card.height, branchHeight) };
+  }
+
+  // Every depth gets one column, wide enough for the widest thing in it, so cards line up
+  // and the connecting lines stay readable instead of crossing at random angles.
+  function collectColumnWidths(node, widths) {
+    widths[node.depth] = Math.max(widths[node.depth] ?? 0, node.card.width);
+    if (node.wrap.width) widths[node.depth + 1] = Math.max(widths[node.depth + 1] ?? 0, node.wrap.width);
+    for (const child of node.children) collectColumnWidths(child, widths);
+  }
+
+  function place(node, yTop, columnX) {
+    const y = Math.round(yTop + (node.subtreeHeight - node.card.height) / 2);
+    const box = { x: columnX[node.depth], y, width: node.card.width, height: node.card.height };
     nodes.push({
-      id: layout.group.id,
+      id: node.group.id,
       type: "slateGroup",
-      position,
-      parentId,
-      extent: parentId ? "parent" : undefined,
+      position: { x: box.x, y: box.y },
       selectable: true,
       draggable: false,
-      zIndex: parentId ? -1 : -2,
-      style: { width: layout.width, height: layout.height },
+      width: node.card.width,
+      height: node.card.height,
+      style: { width: node.card.width, height: node.card.height },
       data: {
-        title: layout.group.title,
-        description: layout.group.description,
-        tone,
-        count: countDescendantPlacements(layout.group.id),
-        depth: layout.depth,
-        level: layout.group.level,
-        route: layout.group.route,
-        role: layout.group.role,
-        sections: layout.group.sections,
+        title: node.group.title,
+        description: node.group.description,
+        tone: node.group.tone || resolveTone(node.group.parentId ?? null) || "neutral",
+        count: countDescendantPlacements(node.group.id),
+        depth: node.depth,
+        level: node.group.level,
+        route: node.group.route,
+        role: node.group.role,
+        sections: node.group.sections,
       },
     });
 
-    const insetX = GROUP_BOX.padding + GROUP_BOX.border;
-    const contentTop = GROUP_BOX.border + layout.header.height;
-    for (const card of layout.cards.placed) {
+    const childColumn = columnX[node.depth + 1];
+    const gap = siblingGap(node.depth + 1);
+    let cursor = yTop;
+
+    if (node.wrap.height) {
+      const tone = node.group.tone || resolveTone(node.group.parentId ?? null) || "neutral";
+      const wrapBox = { x: childColumn, y: Math.round(cursor), width: node.wrap.width, height: node.wrap.height };
+      // Pushed before its records so the enclosure paints behind them.
       nodes.push({
-        id: card.placement.id,
-        type: "slateRecord",
-        position: { x: insetX + card.x, y: contentTop + card.y },
-        parentId: layout.group.id,
-        extent: "parent",
+        id: `${node.group.id}::records`,
+        type: "slateRecordGroup",
+        position: { x: wrapBox.x, y: wrapBox.y },
+        selectable: false,
         draggable: false,
-        selectable: true,
-        style: { width: card.width, height: card.height },
-        data: { ...card.placement.record, placementId: card.placement.id, tone },
+        width: wrapBox.width,
+        height: wrapBox.height,
+        style: { width: wrapBox.width, height: wrapBox.height },
+        data: { tone, count: node.grid.placed.length, ownerId: node.group.id, ownerTitle: node.group.title },
       });
+      for (const card of node.grid.placed) {
+        nodes.push({
+          id: card.placement.id,
+          type: "slateRecord",
+          position: {
+            x: Math.round(wrapBox.x + TREE.recordWrapPadding + card.x),
+            y: Math.round(wrapBox.y + TREE.recordWrapPadding + card.y),
+          },
+          selectable: true,
+          draggable: false,
+          width: card.width,
+          height: card.height,
+          style: { width: card.width, height: card.height },
+          data: { ...card.placement.record, placementId: card.placement.id, tone },
+        });
+      }
+      connect(`${node.group.id}--records`, box, wrapBox);
+      cursor += wrapBox.height + gap;
     }
 
-    const nestedTop = contentTop + layout.cardsHeight + (layout.cardsHeight ? GROUP_BOX.gap : 0);
-    for (const child of layout.nested.placed) {
-      place(child, { x: insetX + child.x, y: nestedTop + child.y }, layout.group.id);
+    for (const child of node.children) {
+      const childBox = place(child, cursor, columnX);
+      connect(`${node.group.id}--${child.group.id}`, box, childBox);
+      cursor += child.subtreeHeight + gap;
     }
+
+    return box;
   }
 
-  const roots = ordered(perspective.groups.filter((group) => !group.parentId)).map((group) => measure(group.id));
-  const rootLayout = packBoxes(roots, packWidth(roots, GROUP_BOX.rootGap, perspective.presentation?.groupColumns || 0, 5200), GROUP_BOX.rootGap);
-  for (const root of rootLayout.placed) place(root, { x: root.x, y: root.y });
-  return nodes;
+  const roots = ordered(perspective.groups.filter((group) => !group.parentId)).map((group) => build(group.id, 0));
+  const widths = [];
+  for (const root of roots) collectColumnWidths(root, widths);
+  const columnX = [];
+  let offset = 0;
+  for (let depth = 0; depth < widths.length; depth += 1) {
+    columnX[depth] = offset;
+    offset += (widths[depth] ?? 0) + levelGap(depth);
+  }
+
+  let rootCursor = 0;
+  for (const root of roots) {
+    place(root, rootCursor, columnX);
+    rootCursor += root.subtreeHeight + siblingGap(0);
+  }
+
+  return { nodes, connectors };
 }
