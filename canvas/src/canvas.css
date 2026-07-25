@@ -135,6 +135,10 @@ button, a { -webkit-tap-highlight-color: transparent; }
 
 .canvas-record { display: flex; width: 100%; height: 100%; flex-direction: column; gap: 5px; padding: 9px; overflow: hidden; border: 1px solid color-mix(in srgb, var(--tone) 28%, var(--color-neutral-stroke-2)); border-left: 3px solid var(--tone); border-radius: 5px; background: var(--color-neutral-bg-1); box-shadow: var(--shadow-4); transition: opacity 120ms ease, border-color 120ms ease, box-shadow 120ms ease; }
 .canvas-record.is-selected { border-color: var(--selection, var(--color-brand-stroke)); border-width: 2px; border-left-color: var(--selection, var(--color-brand-stroke)); background: color-mix(in srgb, var(--selection, var(--color-brand-bg)) 20%, var(--color-neutral-bg-1)); box-shadow: 0 0 0 4px color-mix(in srgb, var(--selection, var(--color-brand-stroke)) 34%, transparent), var(--shadow-8); }
+/* The same record placed in another group. A dashed border reads as "this is that record
+   too" without competing with the selection. It keeps its own group's colour, so a
+   repeat still says which part of the hierarchy it sits in. */
+.canvas-record.is-related { border-color: var(--selection, var(--color-brand-stroke)); border-style: dashed; border-width: 2px; border-left-style: dashed; border-left-color: var(--selection, var(--color-brand-stroke)); background: color-mix(in srgb, var(--selection, var(--color-brand-bg)) 10%, var(--color-neutral-bg-1)); box-shadow: 0 0 0 3px color-mix(in srgb, var(--selection, var(--color-brand-stroke)) 18%, transparent); }
 .canvas-record__eyebrow { display: flex; flex: 0 0 auto; justify-content: space-between; gap: 8px; color: var(--color-neutral-fg-3); font-family: ui-monospace, 'Cascadia Code', monospace; font-size: 8px; font-weight: 650; line-height: 10px; text-transform: uppercase; }
 .canvas-record__eyebrow span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .canvas-record__title { flex: 0 0 auto; margin: 0; color: var(--color-neutral-fg-1); font-size: 11px; font-weight: 580; line-height: 15px; overflow-wrap: anywhere; }
@@ -230,4 +234,9 @@ button, a { -webkit-tap-highlight-color: transparent; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
-}
+}.canvas-details__also { margin: 14px 16px 4px; padding-top: 12px; border-top: 1px solid var(--color-neutral-stroke-2); }
+.canvas-details__also h3 { margin: 0; color: var(--color-neutral-fg-1); font-family: var(--font-family-display); font-size: 12px; font-weight: 680; }
+.canvas-details__also p { margin: 4px 0 8px; color: var(--color-neutral-fg-2); font-size: 11px; line-height: 15px; }
+.canvas-details__also ul { display: flex; flex-direction: column; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.canvas-details__also button { width: 100%; padding: 6px 8px; border: 1px dashed var(--color-neutral-stroke-1); border-radius: 5px; color: var(--color-neutral-fg-1); background: transparent; font: inherit; font-size: 11px; text-align: left; cursor: pointer; }
+.canvas-details__also button:hover, .canvas-details__also button:focus-visible { outline: none; border-color: var(--color-brand-stroke); background: color-mix(in srgb, var(--color-brand-bg) 12%, transparent); }

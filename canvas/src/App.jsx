@@ -180,8 +180,9 @@ function GroupNode({ data, selected }) {
 }
 
 function RecordNode({ data, selected }) {
+  const state = selected ? " is-selected" : data.related ? " is-related" : "";
   return (
-    <article className={`canvas-record canvas-tone--${data.tone}${selected ? " is-selected" : ""}`}>
+    <article className={`canvas-record canvas-tone--${data.tone}${state}`}>
       <div className="canvas-record__eyebrow">
         <span>{data.id}</span>
         <span>{data.kind}</span>
@@ -323,17 +324,29 @@ function CanvasWorkspace({ loaded, themePreference, setThemePreference }) {
 
   // Selecting is separate from focusing. A click selects what the reader pointed at and
   // leaves the viewport alone; the outline and search also move the viewport.
+  //
+  // A record may be placed in more than one group when the same capability is reachable
+  // from more than one place. Selecting one placement marks the others as related, so a
+  // repeat is visibly a repeat rather than looking like a second capability.
   function selectNode(nodeId) {
     const node = flow.getNode(nodeId);
     if (!node) return null;
-    setNodes((current) => current.map((item) => ({ ...item, selected: item.id === nodeId })));
+    const recordId = node.type === "slateRecord" ? node.data?.id : null;
+    setNodes((current) => current.map((item) => {
+      const selected = item.id === nodeId;
+      const related = Boolean(recordId) && !selected && item.type === "slateRecord" && item.data?.id === recordId;
+      if (item.selected === selected && Boolean(item.data?.related) === related) return item;
+      return { ...item, selected, data: { ...item.data, related } };
+    }));
     setSelection([node]);
     setSearchOpen(false);
     return node;
   }
 
   function clearSelection() {
-    setNodes((current) => current.map((item) => (item.selected ? { ...item, selected: false } : item)));
+    setNodes((current) => current.map((item) => (item.selected || item.data?.related
+      ? { ...item, selected: false, data: { ...item.data, related: false } }
+      : item)));
     setSelection([]);
   }
 
@@ -514,13 +527,22 @@ function CanvasWorkspace({ loaded, themePreference, setThemePreference }) {
           <IconButton label={minimapOpen ? "Hide minimap" : "Show minimap"} pressed={minimapOpen} onClick={() => setMinimapOpen((current) => !current)}><MapIcon /></IconButton>
         </div>
 
-        {selectedNode ? <DetailsPanel node={selectedNode} onClose={() => { setSelection([]); setNodes((current) => current.map((node) => ({ ...node, selected: false }))); }} /> : null}
+        {selectedNode ? <DetailsPanel
+          node={selectedNode}
+          alsoIn={selectedNode.type === "slateRecord"
+            ? nodes
+              .filter((item) => item.type === "slateRecord" && item.id !== selectedNode.id && item.data?.id === selectedNode.data?.id)
+              .map((item) => ({ id: item.id, title: perspective.groups.find((group) => group.id === item.parentId)?.title ?? item.parentId }))
+            : []}
+          onOpen={(nodeId) => focusNode(nodeId)}
+          onClose={clearSelection}
+        /> : null}
       </section>
     </main>
   );
 }
 
-function DetailsPanel({ node, onClose }) {
+function DetailsPanel({ node, onClose, alsoIn = [], onOpen }) {
   const isRecord = node.type === "slateRecord";
   const sourceHref = isRecord && node.data.source?.href ? new URL(`index.html#${node.data.source.href}`, HOST_ROOT).href : null;
   return (
@@ -535,6 +557,13 @@ function DetailsPanel({ node, onClose }) {
           {node.data.summary ? <p>{node.data.summary}</p> : null}
           {node.data.metadata?.length ? (
             <dl>{node.data.metadata.map((item) => <div key={`${item.label}-${item.value}`}><dt>{item.label}</dt><dd>{item.value}</dd></div>)}</dl>
+          ) : null}
+          {alsoIn.length ? (
+            <div className="canvas-details__also">
+              <h3>Also reached from</h3>
+              <p>The same capability is placed in {alsoIn.length === 1 ? "one other group" : `${alsoIn.length} other groups`}.</p>
+              <ul>{alsoIn.map((item) => <li key={item.id}><button type="button" onClick={() => onOpen?.(item.id)}>{item.title}</button></li>)}</ul>
+            </div>
           ) : null}
           {sourceHref ? <a href={sourceHref} target="_blank" rel="noopener">Open source <ExternalLink /></a> : null}
         </>
