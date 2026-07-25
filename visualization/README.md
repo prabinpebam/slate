@@ -1,37 +1,37 @@
 # Slate Visualization
 
 Slate routes structured content to the visual medium that explains it best. This folder is part of
-the portable Slate package and contains the authoring skills for charts, graphs, infographics,
-icons, narrative visuals, and custom SVG illustration.
+the portable Slate package and contains the authoring skills for charts, custom SVG illustration,
+and icons.
 
 ## Native routes
 
 | Need | Skill | Output |
 | --- | --- | --- |
+| Quantitative data: trend, comparison, proportion, distribution, correlation, flow, hierarchy | [`chart`](skills/chart/SKILL.md) | Static themeable SVG rendered offline by Semiotic on D3 |
 | Bespoke explanatory diagram, editorial illustration, spatial model, object/scene, icon, map, pattern, or motion subject | [`svg-illustration`](skills/svg-illustration/SKILL.md) | Validated SVG, optionally enhanced by Slate viewport or presentation motion |
-| Standard chart or quick quantitative figure | [`chart-visualization`](skills/chart-visualization/SKILL.md) | Exported local chart image |
-| Rich statistical chart and custom scales/marks | [`antv-g2-chart`](skills/antv-g2-chart/SKILL.md) | Exported SVG/PNG |
-| Network or graph auto-layout | [`antv-g6-graph`](skills/antv-g6-graph/SKILL.md) | Exported SVG/PNG |
-| Node-edge editor or architecture auto-layout | [`antv-x6-editor`](skills/antv-x6-editor/SKILL.md) | Exported SVG/PNG |
-| Pivot table or spreadsheet visualization | [`antv-s2-expert`](skills/antv-s2-expert/SKILL.md) | Exported image/table |
-| Insight-dense narrative | [`narrative-text-visualization`](skills/narrative-text-visualization/SKILL.md) | Narrative visual asset |
-| Summary poster | [`infographic-creator`](skills/infographic-creator/SKILL.md) | Infographic asset |
 | Supporting icon | [`icon-retrieval`](skills/icon-retrieval/SKILL.md) | Local icon asset |
+
+Charts are rendered at authoring time from a declarative JSON spec. There is no browser, no
+headless renderer, and no network call, so output is deterministic and no chart data leaves the
+machine.
 
 ## Routing rule
 
 Choose the medium before authoring:
 
-- Use **SVG Illustration** when exact composition, semantic geometry, accessibility, theming, or
-  stable motion subjects are the hard part.
-- Use a **chart or graph engine** when scales, data transforms, interaction, or automatic layout are
-  the hard part.
-- Use **Slate HTML components** for text-heavy responsive UI, tables, cards, and document structure.
+- Use **Chart** when the point is a *quantity*: how much, how many, what changed, how it is
+  distributed, or how it flows.
+- Use **SVG Illustration** when the point is a *concept*: exact composition, semantic geometry,
+  spatial relationships, accessibility, theming, or stable motion subjects. Decorative and
+  explanatory illustration is authored directly by the model, not produced by a chart engine.
+- Use **Slate HTML components** for text-heavy responsive UI, tables, cards, and document
+  structure. A pivot or spreadsheet is a table, not a chart.
 - Use **bitmap imagery** for photorealism, painterly texture, or complex natural detail.
 - Use **Canvas/WebGL/Three.js** for simulation, 3D, or thousands of changing marks.
 
-Do not turn every process into boxes, every number into an infographic, or every presentation slide
-into decorative SVG. The chosen visual must materially improve comprehension.
+Do not turn every process into boxes, every number into a chart, or every presentation slide into
+decorative SVG. The chosen visual must materially improve comprehension.
 
 ## Slate embedding boundary
 
@@ -51,22 +51,18 @@ Slate illustration behavior.
 See the complete
 [SVG Illustration production profiles](skills/svg-illustration/SKILL.md#slate-production-profiles).
 
+Chart SVG follows the same boundary: presentation attributes only, semantic theme tokens, and an
+accompanying data table so the numbers stay accessible and searchable.
+
 ## Validation
 
-Run the focused native SVG checks from a repository containing Slate:
+Run the focused visualization checks from a repository containing Slate:
 
 ```powershell
 npm run validate:svg-illustration --prefix .\slate
 npm run test:svg-illustration --prefix .\slate
+npm run test:chart --prefix .\slate
 ```
 
 Render inspection in the actual host remains mandatory; structural validation is not proof of visual
 quality.
-
-## AntV attribution and license
-
-The AntV skills under this folder are an English derivative of
-[`antvis/chart-visualization-skills`](https://github.com/antvis/chart-visualization-skills),
-Copyright 2025 AntV Visualization Team, under the MIT License. See [`LICENSE`](LICENSE) and
-[`NOTICE`](NOTICE). The Slate SVG Illustration bundle is a separate Slate-native capability adapted
-from the complete local source bundle supplied by the user.

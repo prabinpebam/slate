@@ -186,8 +186,8 @@ Use this skill when custom static vector composition and art direction are the h
 
 Prefer another Slate visualization route when its engine solves the hard part better:
 
-- **AntV G2 / chart visualization:** quantitative encoding, scales, distributions, or chart export;
-- **AntV G6 / X6:** dense network or node-edge auto-layout;
+- **[chart](../chart/SKILL.md):** quantitative encoding, scales, distributions, flows, hierarchies,
+  or any figure whose point is a measured value;
 - **HTML and Slate components:** responsive text-heavy UI, tables, dashboards, or document structure;
 - **bitmap imagery:** photorealism, painterly texture, or complex natural detail;
 - **Canvas/WebGL/Three.js:** simulation, 3D, particles, or thousands of changing marks;

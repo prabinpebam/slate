@@ -51,6 +51,10 @@ These are the recurring failure modes. Apply them deliberately.
 - **Visual-first is the prime directive.** Any content carrying data, trends, comparisons,
   proportions, processes, hierarchies, or relationships becomes a visualization *before* prose
   is considered. Prose is the fallback, not the default.
+- **Quantities are charts; concepts are illustrations.** Measured values route to the `chart`
+  skill, which renders a declarative spec offline through Semiotic on D3. Explanatory and
+  decorative visuals are authored directly as semantic SVG. Never hand-draw a bar chart, and
+  never generate a conceptual diagram from a chart engine.
 - **Pages are body fragments.** No `<head>`, no `<script>`, no `<style>`, no `<iframe>`.
   The viewer sanitizes everything through one pipeline; anything else is stripped.
 - **Compose from the catalog.** Use the documented components rather than inventing markup or
@@ -90,6 +94,7 @@ npm run test:portability
 npm run test:attributions
 npm run test:presentation-motion
 npm run test:canvas-contracts
+npm run test:chart
 npm run test:svg-illustration
 npm run validate:svg-illustration
 ```

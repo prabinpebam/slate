@@ -54,7 +54,7 @@ light/dark themes, navigation, search, and any visualizations changed by the wor
   components/       # component catalog: one example per component (few-shot patterns)
   canvas/           # fixed read-only React Flow application source and domain model
   templates/        # page + landing scaffolds the agent fills in
-  visualization/    # native SVG illustration plus bundled AntV chart/graph/infographic skills
+  visualization/    # chart rendering, native SVG illustration, and icon retrieval skills
   docs/             # package architecture, planning, and capability specifications
   assets/icons/     # system icon set (no emoji)
   schema/           # JSON Schemas for manifest + config

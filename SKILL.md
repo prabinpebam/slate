@@ -47,8 +47,8 @@ Apply a **heavy bias toward visuals**:
 - If it compares options → make a **comparison** or a grouped **bar/radar** chart.
 - If it describes parts of a whole → **pie/treemap**.
 - If it describes a network, org, or dependency → a **graph/org/mind-map**.
-- If it is a narrative packed with entities and metrics → a **narrative-text visualization** or an
-  **infographic**.
+- If it is a narrative packed with entities and metrics → a **chart** for the quantities plus
+  prose, or an authored **explanatory SVG** when the relationships matter more than the values.
 - Only if none of these fit → prose primitives.
 
 Every page should aim to **lead with or prominently feature at least one visualization** when the
@@ -279,30 +279,28 @@ are embedded as **figures** (see "Embedding a visualization").
 
 | If the content is… | Represent it as | Use skill |
 | --- | --- | --- |
-| A time series / trend | `line` (trend) or `area` (cumulative); `dual-axes` for two units | [chart-visualization](visualization/skills/chart-visualization/SKILL.md) |
-| Category comparison | `bar` / `column`; `radar` for multi-dimension | [chart-visualization](visualization/skills/chart-visualization/SKILL.md) |
-| Parts of a whole | `pie`; `treemap` for hierarchical proportion | [chart-visualization](visualization/skills/chart-visualization/SKILL.md) |
-| Distribution / frequency | `histogram`, `boxplot`, `violin` | [chart-visualization](visualization/skills/chart-visualization/SKILL.md) |
-| Correlation | `scatter` | [chart-visualization](visualization/skills/chart-visualization/SKILL.md) |
-| Flow / conversion | `sankey`, `funnel`, `flow-diagram` | [chart-visualization](visualization/skills/chart-visualization/SKILL.md) |
-| Hierarchy / tree | `organization-chart`, `mind-map`, `treemap` | [chart-visualization](visualization/skills/chart-visualization/SKILL.md) |
-| Cause & effect | `fishbone-diagram` | [chart-visualization](visualization/skills/chart-visualization/SKILL.md) |
-| Progress / percentage | `liquid` | [chart-visualization](visualization/skills/chart-visualization/SKILL.md) |
-| Text frequency | `word-cloud` | [chart-visualization](visualization/skills/chart-visualization/SKILL.md) |
-| Rich statistical chart (custom marks, scales, interactions) | AntV **G2** chart, exported to SVG/PNG | [antv-g2-chart](visualization/skills/antv-g2-chart/SKILL.md) |
-| Network / graph relationships | AntV **G6** graph, exported to SVG/PNG | [antv-g6-graph](visualization/skills/antv-g6-graph/SKILL.md) |
-| Pivot table / spreadsheet | AntV **S2**, exported to image or `spreadsheet` chart | [antv-s2-expert](visualization/skills/antv-s2-expert/SKILL.md) |
-| Node/edge diagram (architecture, workflow) | AntV **X6**, exported to SVG/PNG | [antv-x6-editor](visualization/skills/antv-x6-editor/SKILL.md) |
+| A time series / trend | `line` (trend) or `area` (cumulative) | [chart](visualization/skills/chart/SKILL.md) |
+| Category comparison | `bar` / `column`; `radar` for multi-dimension | [chart](visualization/skills/chart/SKILL.md) |
+| Parts of a whole | `pie` / `donut`; `treemap` for hierarchical proportion | [chart](visualization/skills/chart/SKILL.md) |
+| Distribution / frequency | `histogram` | [chart](visualization/skills/chart/SKILL.md) |
+| Correlation | `scatter` | [chart](visualization/skills/chart/SKILL.md) |
+| Flow / conversion / funnel | `sankey` | [chart](visualization/skills/chart/SKILL.md) |
+| Two-factor intensity | `heatmap` | [chart](visualization/skills/chart/SKILL.md) |
+| Pivot table / spreadsheet / dense tabular data | Slate `table` component | [components/table.html](components/table.html) |
 | Explorable structured records with nested groups, repeated placements, and viewport navigation | Slate **Canvas**, opened in a new full-viewport tab | [Canvas capability](canvas/README.md) |
 | Bespoke explanatory diagram, editorial illustration, spatial model, scene, map, icon, pattern, or article/presentation motion subject | Custom semantic SVG | [svg-illustration](visualization/skills/svg-illustration/SKILL.md) |
-| Insight-dense narrative (entities + metrics) | Narrative-text (T8) visualization | [narrative-text-visualization](visualization/skills/narrative-text-visualization/SKILL.md) |
-| Summary poster of key facts | Infographic | [infographic-creator](visualization/skills/infographic-creator/SKILL.md) |
-| Need an icon for a card/tile/infographic | Icon lookup | [icon-retrieval](visualization/skills/icon-retrieval/SKILL.md) |
+| Summary poster of key facts, process diagram, or insight narrative | Custom semantic SVG authored directly | [svg-illustration](visualization/skills/svg-illustration/SKILL.md) |
+| Need an icon for a card or tile | Icon lookup | [icon-retrieval](visualization/skills/icon-retrieval/SKILL.md) |
 
-**Default, lowest-friction path:** for standard charts, use
-[chart-visualization](visualization/skills/chart-visualization/SKILL.md) - it calls the AntV
-GPT-Vis API and returns a chart **image**, which you save into `assets/charts/` and embed as a
-figure.
+**Default path for quantities:** use
+[chart](visualization/skills/chart/SKILL.md). You write a declarative JSON spec and render it
+offline with Semiotic on D3 to a themeable **inline SVG**, saved beside its spec in `assets/charts/`. There is
+no browser, no headless renderer, and no network call, so the same spec always yields the same
+bytes.
+
+**Default path for concepts:** use
+[svg-illustration](visualization/skills/svg-illustration/SKILL.md). Explanatory and decorative
+illustration is authored directly as semantic SVG, not produced by a chart engine.
 
 ## Embedding a visualization in a page
 
@@ -513,24 +511,17 @@ override does not create a second source of product truth.
 
 ## Visualization skills (bundled)
 
-Vendored under [`visualization/`](visualization/README.md) - an English port of AntV
-`chart-visualization-skills` (MIT). Read the linked `SKILL.md` for each before authoring that
-visual type.
+Bundled under [`visualization/`](visualization/README.md). Read the linked `SKILL.md` before
+authoring that visual type.
 
 | Skill | Use for | Path |
 | --- | --- | --- |
-| chart-visualization | Standard charts via the GPT-Vis API → returns an image (default path) | [visualization/skills/chart-visualization/SKILL.md](visualization/skills/chart-visualization/SKILL.md) |
-| antv-g2-chart | Custom statistical charts (marks, scales, transforms, interactions) | [visualization/skills/antv-g2-chart/SKILL.md](visualization/skills/antv-g2-chart/SKILL.md) |
-| antv-g6-graph | Graph / network visualization | [visualization/skills/antv-g6-graph/SKILL.md](visualization/skills/antv-g6-graph/SKILL.md) |
-| antv-s2-expert | Pivot tables & spreadsheets | [visualization/skills/antv-s2-expert/SKILL.md](visualization/skills/antv-s2-expert/SKILL.md) |
-| antv-x6-editor | Node/edge diagrams (architecture, workflows) | [visualization/skills/antv-x6-editor/SKILL.md](visualization/skills/antv-x6-editor/SKILL.md) |
-| infographic-creator | Infographic posters from text | [visualization/skills/infographic-creator/SKILL.md](visualization/skills/infographic-creator/SKILL.md) |
-| narrative-text-visualization | Insight narratives with inline mini-charts (T8) | [visualization/skills/narrative-text-visualization/SKILL.md](visualization/skills/narrative-text-visualization/SKILL.md) |
-| icon-retrieval | Find icons for cards/tiles/infographics | [visualization/skills/icon-retrieval/SKILL.md](visualization/skills/icon-retrieval/SKILL.md) |
+| chart | Quantitative charts rendered offline by Semiotic on D3 to themeable inline SVG (default path for data) | [visualization/skills/chart/SKILL.md](visualization/skills/chart/SKILL.md) |
+| svg-illustration | Explanatory and decorative illustration authored directly as semantic SVG | [visualization/skills/svg-illustration/SKILL.md](visualization/skills/svg-illustration/SKILL.md) |
+| icon-retrieval | Find icons for cards and tiles | [visualization/skills/icon-retrieval/SKILL.md](visualization/skills/icon-retrieval/SKILL.md) |
 
-Attribution: original work © 2025 AntV Visualization Team, MIT License. See
-[`visualization/LICENSE`](visualization/LICENSE) and [`visualization/NOTICE`](visualization/NOTICE);
-these files MUST be kept when the skill is copied.
+Charts and illustrations are produced locally. Slate does not call a remote rendering service, so
+chart data never leaves the machine and output is reproducible from the committed spec.
 
 ## Hard rules
 

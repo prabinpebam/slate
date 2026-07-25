@@ -58,6 +58,16 @@
     --color-subtle-bg-pressed: rgba(0,0,0,0.06);
     --color-subtle-bg-selected: rgba(0,0,0,0.06);
 
+    /* - Color: Chart series palette (categorical, colour-blind safe) - */
+    --slate-chart-1: #4E79A7;
+    --slate-chart-2: #F28E2B;
+    --slate-chart-3: #59A14F;
+    --slate-chart-4: #B07AA1;
+    --slate-chart-5: #E15759;
+    --slate-chart-6: #76B7B2;
+    --slate-chart-7: #EDC948;
+    --slate-chart-8: #9C755F;
+
     /* - Color: Semantic (info / success / warning / danger) - REQ-DS-08 - */
     --color-status-info-bg: #EBF3FC;
     --color-status-info-fg: #0F548C;
@@ -128,6 +138,16 @@
     --color-subtle-bg-hover: rgba(255,255,255,0.06);
     --color-subtle-bg-pressed: rgba(255,255,255,0.04);
     --color-subtle-bg-selected: rgba(255,255,255,0.06);
+
+    /* - Color: Chart series palette, lifted for dark surfaces - */
+    --slate-chart-1: #7FA8D4;
+    --slate-chart-2: #F5A85A;
+    --slate-chart-3: #7FC47A;
+    --slate-chart-4: #C99EC0;
+    --slate-chart-5: #EE8385;
+    --slate-chart-6: #9AD2CE;
+    --slate-chart-7: #F2D877;
+    --slate-chart-8: #BC9A87;
     --color-status-info-bg: #12283A;
     --color-status-info-fg: #6CB8F6;
     --color-status-info-stroke: #479EF5;
