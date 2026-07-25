@@ -409,8 +409,21 @@ export function layoutCanvas(document, recordSets, perspectiveId) {
     };
   }
 
+  // Tone inherits down the whole ancestor chain, not just from the immediate parent.
+  // A document usually declares a tone on top-level groups only, so resolving one level
+  // dropped every group at depth 2 or deeper to neutral and flattened the hierarchy.
+  const resolvedTones = new Map();
+  function resolveTone(groupId) {
+    if (groupId == null) return "neutral";
+    if (resolvedTones.has(groupId)) return resolvedTones.get(groupId);
+    const group = groupById.get(groupId);
+    const tone = group?.tone || resolveTone(group?.parentId ?? null) || "neutral";
+    resolvedTones.set(groupId, tone);
+    return tone;
+  }
+
   function place(layout, position, parentId) {
-    const tone = layout.group.tone || (parentId ? groupById.get(parentId)?.tone : "neutral") || "neutral";
+    const tone = layout.group.tone || resolveTone(parentId) || "neutral";
     nodes.push({
       id: layout.group.id,
       type: "slateGroup",

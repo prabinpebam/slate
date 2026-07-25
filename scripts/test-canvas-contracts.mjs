@@ -39,6 +39,36 @@ assert.equal(layoutCanvas(document, recordSets).length, 5, "Two groups and three
 assert.equal(document.placements.filter((placement) => placement.recordRef.recordId === "REC-01").length, 2, "A record may appear in multiple groups.");
 assert.equal(canvasPerspectives(document).length, 1, "Legacy documents expose one normalized perspective.");
 
+// Tone must inherit through the whole ancestor chain. A document normally declares a
+// tone on top-level groups only, so resolving a single level dropped every group at
+// depth 2 or deeper to neutral and flattened the visual hierarchy.
+const toneDocument = {
+  schemaVersion: 1,
+  id: "tone-canvas",
+  title: "Tone canvas",
+  mode: "readonly",
+  recordSources: [{ id: "example-records", path: "data/example-records.json" }],
+  groups: [
+    { id: "root", title: "Root", tone: "lilac", order: 1 },
+    { id: "child", title: "Child", parentId: "root", order: 1 },
+    { id: "grandchild", title: "Grandchild", parentId: "child", order: 1 },
+  ],
+  placements: [
+    { id: "tone-placement-1", groupId: "grandchild", recordRef: { sourceId: "example-records", recordId: "REC-01" } },
+  ],
+};
+assert.deepEqual(validateCanvasDocument(toneDocument, recordSets), []);
+const toneNodes = layoutCanvas(toneDocument, recordSets);
+for (const id of ["root", "child", "grandchild"]) {
+  const node = toneNodes.find((item) => item.id === id);
+  assert.equal(node.data.tone, "lilac", `${id} must inherit the tone declared on its ancestor`);
+}
+assert.equal(
+  toneNodes.find((item) => item.type === "slateRecord").data.tone,
+  "lilac",
+  "A record must take the resolved tone of its owning group",
+);
+
 const sizingRecordSet = {
   schemaVersion: 1,
   id: "sizing-records",
