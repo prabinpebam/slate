@@ -10,7 +10,7 @@ and icons.
 | --- | --- | --- |
 | Quantitative data: trend, comparison, proportion, distribution, correlation, flow, hierarchy | [`chart`](skills/chart/SKILL.md) | Static themeable SVG rendered offline by Semiotic on D3 |
 | Bespoke explanatory diagram, editorial illustration, spatial model, object/scene, icon, map, pattern, or motion subject | [`svg-illustration`](skills/svg-illustration/SKILL.md) | Validated SVG, optionally enhanced by Slate viewport or presentation motion |
-| Supporting icon | [`icon-retrieval`](skills/icon-retrieval/SKILL.md) | Local icon asset |
+| Supporting icon inside any chart, illustration, card, tile, or nav entry | [`iconography`](skills/iconography/SKILL.md) | Official vector from Fluent, Material Symbols, or Font Awesome |
 
 Charts are rendered at authoring time from a declarative JSON spec. There is no browser, no
 headless renderer, and no network call, so output is deterministic and no chart data leaves the
@@ -32,6 +32,16 @@ Choose the medium before authoring:
 
 Do not turn every process into boxes, every number into a chart, or every presentation slide into
 decorative SVG. The chosen visual must materially improve comprehension.
+
+## Icons
+
+Charts and illustrations may both use icons. **Every icon comes from one of three approved sources -
+Fluent Icons, Google Material Symbols, or Font Awesome - and one source is used exclusively within
+a given SVG, chart, or component.** Prefer Fluent for Microsoft and Windows subjects.
+
+Never draw a familiar icon from memory, never mix libraries in one artifact, never substitute a
+generic dot or sparkle when the library has a real icon for the concept, and never use emoji. The
+complete contract is in [`iconography`](skills/iconography/SKILL.md).
 
 ## Slate embedding boundary
 

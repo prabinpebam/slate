@@ -155,6 +155,36 @@ To pin one colour, pass `color` in `props`; use a token so it still themes:
 
 Never encode meaning by colour alone. Label directly, order meaningfully, or annotate.
 
+## Icons in charts
+
+Charts may use icons, and often should - a platform, device, product, or people-group category is
+recognised faster by symbol than by name.
+
+**Source every icon from one of three approved libraries: Fluent Icons, Google Material Symbols, or
+Font Awesome.** Use exactly one source per chart. Prefer Fluent for Microsoft and Windows subjects.
+The full contract - sourcing, provenance, theming, accessibility - is in
+[`iconography`](../iconography/SKILL.md).
+
+Use icons for:
+
+- **Category identity** beside an axis label, legend entry, or bar.
+- **Annotation markers** pointing at a threshold, incident, or callout.
+- **KPI and big-number figures**, where the icon carries the subject and the number carries the value.
+
+Rules specific to charts:
+
+- Icons are **supporting, never the data encoding**. Never size an icon to represent a quantity;
+  that is a chart type (`BubbleChart`), not an icon.
+- Never replace an axis or legend label with a bare icon that has no accessible name. Keep the text
+  and let the icon assist it.
+- Colour icons with the same Slate tokens as the series they belong to, so they theme together.
+- Decorative icons take `aria-hidden="true"`; the chart's `<title>` and `<desc>` already carry the
+  accessible meaning.
+- Never draw an icon from memory, mix libraries within one chart, or use emoji.
+
+Add icons through `props.annotations` or by composing the icon into the surrounding figure markup
+after render. Do not hand-edit the generated SVG to insert them - see the guardrails below.
+
 ## Quality bar
 
 Before accepting a chart:

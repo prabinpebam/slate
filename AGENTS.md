@@ -60,8 +60,12 @@ These are the recurring failure modes. Apply them deliberately.
 - **Compose from the catalog.** Use the documented components rather than inventing markup or
   page-specific CSS. If content needs something absent from the catalog, choose the closest
   component or fall back to prose and flag the gap.
-- **No emoji** in user-facing text, labels, status, or tooltips. The package ships an icon set
-  in `assets/icons/`; nav icons use Material Symbols Outlined names in the manifest.
+- **No emoji** in user-facing text, labels, status, or tooltips. Every icon - in a chart, an
+  illustration, a card, a tile, or the nav - is official vector geometry from **Fluent Icons**,
+  **Google Material Symbols**, or **Font Awesome**, and one source is used exclusively per artifact.
+  Never draw a familiar icon from memory or mix libraries. See
+  `visualization/skills/iconography/SKILL.md`. Nav icons use Material Symbols Outlined names in the
+  manifest.
 - **Never fabricate.** Do not invent excerpts, sources, version-history entries, or data. An
   `xref` must quote text that actually exists at the target anchor.
 - **Every page needs a content-appropriate `icon`** in the manifest. Do not leave the default

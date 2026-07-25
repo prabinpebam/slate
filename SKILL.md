@@ -290,7 +290,7 @@ are embedded as **figures** (see "Embedding a visualization").
 | Explorable structured records with nested groups, repeated placements, and viewport navigation | Slate **Canvas**, opened in a new full-viewport tab | [Canvas capability](canvas/README.md) |
 | Bespoke explanatory diagram, editorial illustration, spatial model, scene, map, icon, pattern, or article/presentation motion subject | Custom semantic SVG | [svg-illustration](visualization/skills/svg-illustration/SKILL.md) |
 | Summary poster of key facts, process diagram, or insight narrative | Custom semantic SVG authored directly | [svg-illustration](visualization/skills/svg-illustration/SKILL.md) |
-| Need an icon for a card or tile | Icon lookup | [icon-retrieval](visualization/skills/icon-retrieval/SKILL.md) |
+| Need an icon for a card or tile | Icon lookup | [iconography](visualization/skills/iconography/SKILL.md) |
 
 **Default path for quantities:** use
 [chart](visualization/skills/chart/SKILL.md). You write a declarative JSON spec and render it
@@ -518,7 +518,7 @@ authoring that visual type.
 | --- | --- | --- |
 | chart | Quantitative charts rendered offline by Semiotic on D3 to themeable inline SVG (default path for data) | [visualization/skills/chart/SKILL.md](visualization/skills/chart/SKILL.md) |
 | svg-illustration | Explanatory and decorative illustration authored directly as semantic SVG | [visualization/skills/svg-illustration/SKILL.md](visualization/skills/svg-illustration/SKILL.md) |
-| icon-retrieval | Find icons for cards and tiles | [visualization/skills/icon-retrieval/SKILL.md](visualization/skills/icon-retrieval/SKILL.md) |
+| iconography | Icons inside charts, illustrations, cards, and tiles, sourced from Fluent, Material Symbols, or Font Awesome | [visualization/skills/iconography/SKILL.md](visualization/skills/iconography/SKILL.md) |
 
 Charts and illustrations are produced locally. Slate does not call a remote rendering service, so
 chart data never leaves the machine and output is reproducible from the committed spec.
@@ -535,27 +535,31 @@ chart data never leaves the machine and output is reproducible from the committe
    write `<style>`/`<script>` in content, never use inline `style=`. Visuals are embedded as
    **static images or inline SVG** inside a figure - never as live scripts or iframes.
 4. Author **body fragments**, not full HTML documents. The shell owns `<head>`, theme, and layout.
-5. Exactly **one H1** per page. H2/H3 drive the TOC and collapsible sections.
-6. Pick format per page: prose-heavy → Markdown; layout/visual → HTML; mixed when needed.
-7. Every page **leads with a TL;DR** band, and features a visualization when the content supports it.
-8. **Save visualization assets locally** under `assets/`; reference relative paths.
-9. Links are **relative** to real content paths; the runtime rewrites them to hash routes.
-10. **Update `docs-manifest.json`** for every page (path, title, order, group).
-11. **Preserve source material** - generate alongside inputs, never overwrite them. Keep the
-    bundled `visualization/LICENSE` and `visualization/NOTICE`.
-12. **Accessibility**: alt text on every image/chart, semantic markup, keyboard-reachable components.
-13. **No emoji** - use the icon set in [`assets/icons/`](assets/icons/) or
-    [icon-retrieval](visualization/skills/icon-retrieval/SKILL.md).
-14. **No fabrication** - every fact, number, and data point must trace to the provided inputs. Do
+5. **Icons come from an approved source.** Every icon used inside a chart, illustration, card, tile,
+   or nav entry is official vector geometry from **Fluent Icons**, **Google Material Symbols**, or
+   **Font Awesome**, and exactly one of those sources is used within a given artifact. Never draw a
+   familiar icon from memory, never mix libraries, never substitute a generic dot or sparkle when
+   the library has a real icon, and never use emoji. See
+   [iconography](visualization/skills/iconography/SKILL.md).
+6. Exactly **one H1** per page. H2/H3 drive the TOC and collapsible sections.
+7. Pick format per page: prose-heavy → Markdown; layout/visual → HTML; mixed when needed.
+8. Every page **leads with a TL;DR** band, and features a visualization when the content supports it.
+9. **Save visualization assets locally** under `assets/`; reference relative paths.
+10. Links are **relative** to real content paths; the runtime rewrites them to hash routes.
+11. **Update `docs-manifest.json`** for every page (path, title, order, group).
+12. **Preserve source material** - generate alongside inputs, never overwrite them.
+13. **Accessibility**: alt text on every image/chart, semantic markup, keyboard-reachable components.
+14. **No emoji** - use an approved icon source instead. See
+    [iconography](visualization/skills/iconography/SKILL.md) and [`assets/icons/`](assets/icons/).
+15. **No fabrication** - every fact, number, and data point must trace to the provided inputs. Do
     not invent data to make a nicer chart.
-15. **Give every page a content-appropriate `icon`** in the manifest (a Material Symbols Outlined
+16. **Give every page a content-appropriate `icon`** in the manifest (a Material Symbols Outlined
     name). Never leave the default document icon on every page (see [Page icons](#page-icons)).
-16. **No meta-documentation by default.** Reviews, audits, validation passes, and gap analyses update
+17. **No meta-documentation by default.** Reviews, audits, validation passes, and gap analyses update
   the durable pages they evaluate. Do not create review reports, closure records, point-in-time snapshots,
   or pages about the documentation unless the user explicitly requests a versioned record.
-17. **Generic-first evolution.** Reusable capabilities and fixes land with package tests before host
+18. **Generic-first evolution.** Reusable capabilities and fixes land with package tests before host
   adoption. Host content, authority, branding, and policy never become generic defaults.
-
 ## Self-validation checklist
 
 Use the change assessment above to select the applicable items. The checklist is a coverage menu,
