@@ -1,6 +1,6 @@
 {
   "name": "@slate/docs",
-  "version": "0.7.5",
+  "version": "0.7.6",
   "description": "Slate is a project-agnostic documentation system and agent skill for visual-first static documentation sites.",
   "private": true,
   "type": "module",
