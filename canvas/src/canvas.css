@@ -121,13 +121,9 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .canvas-group--depth-1 { border-width: 1.5px; background: color-mix(in srgb, var(--tone) 9%, var(--color-neutral-bg-1)); }
 .canvas-group--depth-2 { background: color-mix(in srgb, var(--tone) 5%, var(--color-neutral-bg-1)); }
 .canvas-group--depth-3 { background: color-mix(in srgb, var(--tone) 3%, var(--color-neutral-bg-1)); }
-.canvas-group.is-selected { border-color: var(--color-brand-stroke); border-width: 2px; box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-brand-stroke) 26%, transparent), var(--shadow-8); }
-
-/* When something is selected, everything else recedes. Without this the only signal is
-   a ring on one node in a dense canvas, which is easy to lose. */
-.canvas-workspace.has-selection .canvas-group:not(.is-selected),
-.canvas-workspace.has-selection .canvas-record:not(.is-selected) { opacity: 0.42; }
-.canvas-workspace.has-selection .canvas-group:not(.is-selected) { border-color: color-mix(in srgb, var(--tone) 22%, var(--color-neutral-stroke-2)); }
+/* Selection is additive: a selected group or record gains a brand border, a brand-tinted
+   surface, and a ring. Nothing else changes - dimming the rest would read as disabled. */
+.canvas-group.is-selected { border-color: var(--color-brand-stroke); border-width: 2px; background: color-mix(in srgb, var(--color-brand-bg) 16%, var(--color-neutral-bg-1)); box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-brand-stroke) 26%, transparent), var(--shadow-8); }
 .canvas-group__header { display: flex; align-items: flex-start; gap: 8px; padding: 9px 10px 7px; }
 .canvas-group__mark { width: 4px; height: 16px; flex: 0 0 auto; border-radius: 2px; background: var(--tone); }
 .canvas-group__heading { min-width: 0; flex: 1; }
@@ -137,7 +133,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .canvas-group__count { display: grid; min-width: 20px; height: 17px; place-items: center; padding: 0 5px; border: 1px solid color-mix(in srgb, var(--tone) 30%, var(--color-neutral-stroke-2)); border-radius: 4px; color: var(--color-neutral-fg-2); background: color-mix(in srgb, var(--tone) 7%, var(--color-neutral-bg-1)); font-size: 8px; font-weight: 700; }
 
 .canvas-record { display: flex; width: 100%; height: 100%; flex-direction: column; gap: 5px; padding: 9px; overflow: hidden; border: 1px solid color-mix(in srgb, var(--tone) 28%, var(--color-neutral-stroke-2)); border-left: 3px solid var(--tone); border-radius: 5px; background: var(--color-neutral-bg-1); box-shadow: var(--shadow-4); transition: opacity 120ms ease, border-color 120ms ease, box-shadow 120ms ease; }
-.canvas-record.is-selected { border-color: var(--color-brand-stroke); border-left-color: var(--color-brand-stroke); box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-brand-stroke) 28%, transparent), var(--shadow-8); }
+.canvas-record.is-selected { border-color: var(--color-brand-stroke); border-width: 2px; border-left-color: var(--color-brand-stroke); background: color-mix(in srgb, var(--color-brand-bg) 16%, var(--color-neutral-bg-1)); box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-brand-stroke) 28%, transparent), var(--shadow-8); }
 .canvas-record__eyebrow { display: flex; flex: 0 0 auto; justify-content: space-between; gap: 8px; color: var(--color-neutral-fg-3); font-family: ui-monospace, 'Cascadia Code', monospace; font-size: 8px; font-weight: 650; line-height: 10px; text-transform: uppercase; }
 .canvas-record__eyebrow span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .canvas-record__title { flex: 0 0 auto; margin: 0; color: var(--color-neutral-fg-1); font-size: 11px; font-weight: 580; line-height: 15px; overflow-wrap: anywhere; }

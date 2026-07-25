@@ -436,7 +436,7 @@ function CanvasWorkspace({ loaded, themePreference, setThemePreference }) {
         </div>
       </header>
 
-      <section className={`canvas-workspace${selection.length ? " has-selection" : ""}`}>
+      <section className="canvas-workspace">
         <ReactFlow
           nodes={nodes}
           edges={[]}
