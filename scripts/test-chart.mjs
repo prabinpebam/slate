@@ -37,6 +37,24 @@ const bar = {
 
 /* ------------------------------------------------------------- positive */
 
+test("output is responsive: viewBox replaces fixed width and height", () => {
+  const { svg } = renderChartSpec(bar);
+  const root = svg.slice(0, svg.indexOf(">") + 1);
+  assert.match(root, /viewBox="0 0 [\d.]+ [\d.]+"/, "chart root must carry a viewBox");
+  assert.ok(!/\swidth="/.test(root), "fixed width must be dropped so the figure can scale");
+  assert.ok(!/\sheight="/.test(root), "fixed height must be dropped so the figure can scale");
+});
+
+test("structural chrome uses host theme tokens while data colours survive", () => {
+  const { svg } = renderChartSpec(bar);
+  assert.ok(
+    !/(fill|stroke)="(#333|#666|#999|#ccc|#e0e0e0|gray)"/i.test(svg),
+    "fixed structural greys must be mapped onto host semantic tokens",
+  );
+  assert.ok(svg.includes("var(--color-neutral-"), "expected host neutral tokens on chart chrome");
+  assert.ok(svg.includes("var(--slate-chart-1"), "data palette must survive the mapping");
+});
+
 test("renders a chart with marks", () => {
   const { svg, evidence } = renderChartSpec(bar);
   assert.ok(svg.trimStart().startsWith("<svg"), "expected an SVG root");
@@ -76,7 +94,7 @@ test("a spec may override Slate defaults", () => {
     ...bar,
     props: { ...bar.props, width: 480, height: 300 },
   });
-  assert.match(svg, /width="480"/, "expected the spec width to win");
+  assert.match(svg, /viewBox="0 0 480 300"/, "expected the spec size to win, expressed as the viewBox");
 });
 
 test("the bundled example renders", () => {

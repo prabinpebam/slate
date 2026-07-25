@@ -95,6 +95,45 @@ export function validateSpec(spec) {
 
 /* ------------------------------------------------------------------ render */
 
+// The renderer paints structural chrome - axis lines, ticks, tick labels, grid,
+// and legend text - with fixed greys that assume a light page. Slate charts are
+// inlined into a themed host, so those greys disappear in dark mode. Map only
+// the exact structural literals onto host semantic tokens, keeping the original
+// grey as the fallback. Data colours come from SLATE_PALETTE and are untouched.
+const STRUCTURAL_COLORS = new Map([
+  ["#333", "var(--color-neutral-fg-1, #333)"],
+  ["#666", "var(--color-neutral-fg-2, #666)"],
+  ["#999", "var(--color-neutral-fg-3, #999)"],
+  ["gray", "var(--color-neutral-fg-2, #666)"],
+  ["#ccc", "var(--color-neutral-stroke-1, #ccc)"],
+  ["#e0e0e0", "var(--color-neutral-stroke-2, #e0e0e0)"],
+]);
+
+export function themeStructuralColors(svg) {
+  return svg.replace(/(fill|stroke)="([^"]*)"/g, (match, attribute, value) => {
+    const replacement = STRUCTURAL_COLORS.get(value.trim().toLowerCase());
+    return replacement ? `${attribute}="${replacement}"` : match;
+  });
+}
+
+// The renderer emits a fixed pixel width and height. A Slate figure scales its
+// SVG to the container, which needs an intrinsic aspect ratio, so promote the
+// rendered size to a viewBox and drop the fixed attributes. Without this the
+// chart either overflows narrow columns or renders at the wrong height.
+export function makeResponsive(svg) {
+  const end = svg.indexOf(">");
+  const root = svg.slice(0, end + 1);
+  if (/\sviewBox=/.test(root)) return svg;
+  const width = root.match(/\swidth="([\d.]+)(?:px)?"/)?.[1];
+  const height = root.match(/\sheight="([\d.]+)(?:px)?"/)?.[1];
+  if (!width || !height) return svg;
+  const responsiveRoot = root
+    .replace(/\swidth="[^"]*"/, "")
+    .replace(/\sheight="[^"]*"/, "")
+    .replace("<svg", `<svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="xMidYMid meet"`);
+  return responsiveRoot + svg.slice(end + 1);
+}
+
 export function renderChartSpec(rawSpec) {
   const spec = validateSpec(rawSpec);
 
@@ -115,7 +154,8 @@ export function renderChartSpec(rawSpec) {
     animate: false,
   };
 
-  const { svg, evidence } = renderChartWithEvidence(spec.chart, props);
+  const { svg: rendered, evidence } = renderChartWithEvidence(spec.chart, props);
+  let svg = rendered;
 
   if (typeof svg !== "string" || !svg.trimStart().startsWith("<svg")) {
     fail(`${spec.chart} did not produce an SVG root element`);
@@ -136,6 +176,7 @@ export function renderChartSpec(rawSpec) {
         "so marks have no computed position or size.",
     );
   }
+  svg = themeStructuralColors(makeResponsive(svg));
   if (FORBIDDEN.test(svg)) {
     fail(`${spec.chart} produced markup the Slate sanitizer forbids`);
   }
