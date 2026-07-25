@@ -153,3 +153,10 @@ assert.equal(canvasPerspective(demoDocument, "by-stage").placements.filter((plac
 assert.equal(canvasPerspectives(demoDocument).length, 2, "Generic demo must prove perspective switching");
 
 console.log(`Slate Canvas contract tests passed (${16 + mutations.length} cases).`);
+// The canvas shell requests its bundle with a ?v= cache key. If that key stops tracking
+// the package version, browsers keep running a cached bundle after an upgrade.
+const canvasShellIndex = fs.readFileSync(path.join(packageRoot, "shell", "canvas", "index.html"), "utf8");
+const slateVersion = JSON.parse(fs.readFileSync(path.join(packageRoot, "package.json"), "utf8")).version;
+assert.ok(canvasShellIndex.includes(`canvas.js?v=${slateVersion}`), "Built canvas shell must request canvas.js with the current package version");
+assert.ok(canvasShellIndex.includes(`canvas.css?v=${slateVersion}`), "Built canvas shell must request canvas.css with the current package version");
+assert.ok(!canvasShellIndex.includes("__SLATE_VERSION__"), "Built canvas shell must not ship the version placeholder");

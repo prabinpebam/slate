@@ -22,5 +22,14 @@ await build({
   logLevel: "info",
 });
 
-fs.copyFileSync(path.join(sourceRoot, "index.html"), path.join(outputRoot, "index.html"));
+// The shell requests canvas.js and canvas.css with a ?v= cache key. That key was
+// hard-coded in the source index.html, so it never changed on release and browsers kept
+// executing a cached bundle after every Slate upgrade. Stamp the real package version.
+const packageVersion = JSON.parse(fs.readFileSync(path.join(packageRoot, "package.json"), "utf8")).version;
+const canvasIndex = fs.readFileSync(path.join(sourceRoot, "index.html"), "utf8")
+  .replaceAll("__SLATE_VERSION__", packageVersion);
+if (canvasIndex.includes("__SLATE_VERSION__") || !canvasIndex.includes(`?v=${packageVersion}`)) {
+  throw new Error("Canvas index.html must request its assets with the current package version");
+}
+fs.writeFileSync(path.join(outputRoot, "index.html"), canvasIndex);
 console.log("Slate Canvas runtime built at shell/canvas.");
