@@ -115,6 +115,22 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .react-flow { background: var(--canvas-bg); }
 .react-flow__node { border: 0; box-shadow: none; }
 .react-flow__node:focus-visible { outline: 2px solid var(--color-brand-stroke); outline-offset: 3px; }
+
+/* Collapse and expand motion. Cards that stay on the canvas glide to their new place so
+   you can follow where a branch went. Cards that appear fade up rather than popping in.
+   The connector layer dips while the layout settles, because a line redrawn to its final
+   geometry a frame ahead of the cards it joins reads as broken rather than as movement. */
+.react-flow__node { transition: transform 320ms cubic-bezier(0.22, 0.61, 0.36, 1); animation: canvas-node-enter 280ms cubic-bezier(0.22, 0.61, 0.36, 1) both; }
+.react-flow__node.dragging { transition: none; animation: none; }
+@keyframes canvas-node-enter { from { opacity: 0; } to { opacity: 1; } }
+.canvas-connectors { transition: opacity 180ms ease; }
+.canvas-workspace.is-settling .canvas-connectors { opacity: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .react-flow__node { transition: none; animation: none; }
+  .canvas-connectors { transition: none; }
+  .canvas-workspace.is-settling .canvas-connectors { opacity: 1; }
+}
 .react-flow__attribution { padding: 2px 5px; color: var(--color-neutral-fg-3); background: color-mix(in srgb, var(--color-neutral-bg-1) 80%, transparent); font-size: 8px; }
 /* Group cards are tree nodes, not containers. The tint still steps with depth so a
    branch keeps its identity, but nothing is drawn inside anything else. */
@@ -252,3 +268,14 @@ button, a { -webkit-tap-highlight-color: transparent; }
 /* One enclosure holds all of a group's records, and one connector reaches the enclosure
    rather than every card inside it. */
 .canvas-record-group { width: 100%; height: 100%; border: 1px dashed color-mix(in srgb, var(--tone) 42%, var(--color-neutral-stroke-2)); border-radius: 10px; background: color-mix(in srgb, var(--tone) 6%, transparent); }
+
+/* Collapse affordance. The chevron replaces the tone mark, so a branch node reads as
+   openable and a leaf node still shows its colour mark. */
+.canvas-group__toggle { display: grid; width: 18px; height: 18px; flex: 0 0 auto; place-items: center; padding: 0; border: 1px solid transparent; border-radius: 4px; color: var(--tone); background: transparent; cursor: pointer; }
+.canvas-group__toggle svg { width: 13px; height: 13px; }
+.canvas-group__toggle:hover, .canvas-group__toggle:focus-visible { outline: none; border-color: color-mix(in srgb, var(--tone) 55%, transparent); background: color-mix(in srgb, var(--tone) 18%, transparent); }
+.canvas-group__hidden { overflow: hidden; margin: 3px 0 0; color: var(--tone); font-size: 9px; font-weight: 650; line-height: 12px; text-overflow: ellipsis; white-space: nowrap; }
+/* A collapsed node shows a stacked edge, so it is obvious that something is folded
+   behind it rather than simply absent. */
+.canvas-group.is-collapsed { position: relative; }
+.canvas-group.is-collapsed::after { position: absolute; top: 6px; right: -5px; bottom: 6px; width: 5px; border: 1px solid color-mix(in srgb, var(--tone) 55%, var(--color-neutral-stroke-1)); border-left: 0; border-radius: 0 6px 6px 0; background: color-mix(in srgb, var(--tone) 14%, var(--color-neutral-bg-2)); content: ""; }

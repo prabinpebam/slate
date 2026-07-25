@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useId, useRef, useState } from "react";
 import {
   Background,
   BackgroundVariant,
@@ -8,7 +8,6 @@ import {
   ReactFlow,
   ReactFlowProvider,
   ViewportPortal,
-  applyNodeChanges,
   useReactFlow,
 } from "@xyflow/react";
 
@@ -26,6 +25,8 @@ import {
   Check,
   ChevronDown,
   ChevronRight,
+  ChevronsDownUp,
+  ChevronsUpDown,
   ExternalLink,
   Focus,
   Fullscreen,
@@ -180,15 +181,38 @@ function PerspectiveMenu({ items, value, onChange }) {
   );
 }
 
-function GroupNode({ data, selected }) {
+// Node components are rendered by the flow library, so they reach canvas actions through
+// context rather than by having callbacks threaded into every node's data.
+const CanvasActions = createContext({ toggleCollapse: () => {} });
+
+function GroupNode({ id, data, selected }) {
+  const { toggleCollapse } = useContext(CanvasActions);
+  const hidden = [
+    data.hiddenAreas ? `${data.hiddenAreas} area${data.hiddenAreas === 1 ? "" : "s"}` : null,
+    data.hiddenRecords ? `${data.hiddenRecords} record${data.hiddenRecords === 1 ? "" : "s"}` : null,
+  ].filter(Boolean).join(" \u00b7 ");
   return (
-    <section className={`canvas-group canvas-group--depth-${data.depth} canvas-tone--${data.tone}${selected ? " is-selected" : ""}`}>
-      <TreeHandles />
+    <section className={`canvas-group canvas-group--depth-${data.depth} canvas-tone--${data.tone}${selected ? " is-selected" : ""}${data.collapsed ? " is-collapsed" : ""}`}>
       <header className="canvas-group__header">
-        <div className="canvas-group__mark" aria-hidden="true" />
+        {data.hasBranch ? (
+          <button
+            type="button"
+            className="canvas-group__toggle nodrag nopan"
+            aria-expanded={!data.collapsed}
+            aria-label={`${data.collapsed ? "Expand" : "Collapse"} ${data.title}${data.collapsed && hidden ? `, ${hidden} hidden` : ""}`}
+            title={data.collapsed ? `Expand \u2014 ${hidden} hidden` : "Collapse"}
+            onClick={(event) => { event.stopPropagation(); toggleCollapse(id); }}
+          >
+            {data.collapsed ? <ChevronRight aria-hidden="true" /> : <ChevronDown aria-hidden="true" />}
+          </button>
+        ) : (
+          <span className="canvas-group__mark" aria-hidden="true" />
+        )}
         <div className="canvas-group__heading">
           <h2>{data.title}</h2>
-          {data.description ? <p>{data.description}</p> : null}
+          {data.collapsed && hidden
+            ? <p className="canvas-group__hidden">{hidden} hidden</p>
+            : data.description ? <p>{data.description}</p> : null}
         </div>
         <span className="canvas-group__count">{data.count}</span>
       </header>
@@ -320,9 +344,13 @@ function CanvasWorkspace({ loaded, themePreference, setThemePreference }) {
   const perspectives = canvasPerspectives(canvasDocument);
   const [perspectiveId, setPerspectiveId] = useState(canvasDocument.defaultPerspectiveId || perspectives[0].id);
   const perspective = canvasPerspective(canvasDocument, perspectiveId);
-  const [graph, setGraph] = useState(() => layoutCanvas(canvasDocument, recordSets, perspectiveId));
+  const [collapsed, setCollapsed] = useState(() => new Set());
+  const [graph, setGraph] = useState(() => layoutCanvas(canvasDocument, recordSets, perspectiveId, { collapsed: [] }));
   const nodes = graph.nodes;
   const connectors = graph.connectors;
+  const settleRef = useRef(0);
+  const paneRef = useRef(null);
+  const [settling, setSettling] = useState(false);
   function setNodes(updater) {
     setGraph((current) => ({ ...current, nodes: typeof updater === "function" ? updater(current.nodes) : updater }));
   }
@@ -344,9 +372,49 @@ function CanvasWorkspace({ loaded, themePreference, setThemePreference }) {
     ? nodes.filter((node) => node.data.title?.toLocaleLowerCase().includes(normalizedQuery) || node.data.id?.toLocaleLowerCase().includes(normalizedQuery)).slice(0, 20)
     : [];
 
+  // React Flow's own fitView needs every node to have been measured in the DOM. This canvas
+  // renders read-only cards whose exact size already comes out of the layout, and it never
+  // triggers that measurement pass, so fitView silently did nothing. Framing is computed
+  // from the layout geometry instead. That also keeps it correct while a collapse or expand
+  // is still settling, and it lets the frame avoid the navigator panel that sits over the
+  // left edge of the canvas.
+  function fitToNodes(targetNodes, { padding = 48, maxZoom = 1, minZoom = 0.035, source = graph.nodes } = {}) {
+    const pane = paneRef.current;
+    if (!pane || !targetNodes.length) return;
+    const rect = pane.getBoundingClientRect();
+    const inset = outlineOpen ? 296 : 0;
+    const viewWidth = rect.width - inset - padding * 2;
+    const viewHeight = rect.height - padding * 2;
+    if (viewWidth <= 0 || viewHeight <= 0) return;
+
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+    for (const target of targetNodes) {
+      const node = source.find((item) => item.id === target.id) ?? target;
+      minX = Math.min(minX, node.position.x);
+      minY = Math.min(minY, node.position.y);
+      maxX = Math.max(maxX, node.position.x + (node.width ?? 0));
+      maxY = Math.max(maxY, node.position.y + (node.height ?? 0));
+    }
+    const width = Math.max(1, maxX - minX);
+    const height = Math.max(1, maxY - minY);
+    const zoom = Math.min(maxZoom, Math.max(minZoom, Math.min(viewWidth / width, viewHeight / height)));
+
+    flow.setViewport(
+      {
+        x: inset + padding + (viewWidth - width * zoom) / 2 - minX * zoom,
+        y: padding + (viewHeight - height * zoom) / 2 - minY * zoom,
+        zoom,
+      },
+      { duration },
+    );
+  }
+
   function focusNodes(targetNodes) {
     if (!targetNodes.length) return;
-    flow.fitView({ nodes: targetNodes, padding: targetNodes.length === 1 ? 0.8 : 0.18, duration, maxZoom: 1.35 });
+    fitToNodes(targetNodes, { padding: targetNodes.length === 1 ? 180 : 64, maxZoom: 1.35 });
   }
 
   // Selecting is separate from focusing. A click selects what the reader pointed at and
@@ -383,17 +451,97 @@ function CanvasWorkspace({ loaded, themePreference, setThemePreference }) {
     focusNodes([node]);
   }
 
-  function fitAll() {
-    flow.fitView({ padding: 0.06, duration, minZoom: 0.035, maxZoom: 1 });
+  // Collapsing and expanding move a lot of the canvas at once, so the change is animated
+  // rather than snapped: surviving nodes glide to their new places, and the branch being
+  // opened or closed grows out of, or folds back into, the node that was toggled.
+  // Connectors are derived from live node positions, so the lines travel with them.
+  // The node you toggled stays put on screen. Without this the canvas appears to jump,
+  // because everything below the toggled branch shifts up or down around it.
+  //
+  // Motion is handled by CSS: surviving nodes glide to their new places on a transform
+  // transition, new nodes fade in, and the connectors dip while the layout settles rather
+  // than snapping to the new geometry a frame ahead of the cards they join.
+  function applyCollapsed(nextCollapsed, anchorId, { fit = false } = {}) {
+    const nextGraph = layoutCanvas(canvasDocument, recordSets, perspectiveId, { collapsed: [...nextCollapsed] });
+    const before = graph.nodes.find((node) => node.id === anchorId)?.position;
+    const after = nextGraph.nodes.find((node) => node.id === anchorId)?.position;
+    setCollapsed(nextCollapsed);
+    setGraph(nextGraph);
+    if (!reducedMotion) {
+      setSettling(true);
+      clearTimeout(settleRef.current);
+      settleRef.current = setTimeout(() => setSettling(false), 360);
+    }
+
+    // Collapsing or expanding one branch keeps that branch under the pointer, so the reader
+    // does not lose their place. Collapsing or expanding everything changes the whole shape
+    // of the canvas, so it reframes instead.
+    if (fit) {
+      fitAll(nextGraph.nodes);
+      return;
+    }
+    if (before && after) {
+      const viewport = flow.getViewport();
+      flow.setViewport(
+        {
+          x: viewport.x - (after.x - before.x) * viewport.zoom,
+          y: viewport.y - (after.y - before.y) * viewport.zoom,
+          zoom: viewport.zoom,
+        },
+        { duration },
+      );
+    }
+  }
+
+  function toggleCollapse(groupId) {
+    const next = new Set(collapsed);
+    if (next.has(groupId)) next.delete(groupId); else next.add(groupId);
+    applyCollapsed(next, groupId);
+  }
+
+  // Connector geometry comes from wherever the two nodes currently are, so the lines stay
+  // attached through the collapse animation and fade out with the nodes they join.
+  const nodeById = new Map(nodes.map((node) => [node.id, node]));
+  const connectorPaths = connectors.flatMap((connector) => {
+    const from = nodeById.get(connector.from);
+    const to = nodeById.get(connector.to);
+    if (!from || !to) return [];
+    const x1 = from.position.x + (from.width ?? from.style?.width ?? 0);
+    const y1 = from.position.y + (from.height ?? from.style?.height ?? 0) / 2;
+    const x2 = to.position.x;
+    const y2 = to.position.y + (to.height ?? to.style?.height ?? 0) / 2;
+    const bend = Math.max(16, (x2 - x1) * 0.5);
+    return [{
+      id: connector.id,
+      d: `M${x1} ${y1} C${x1 + bend} ${y1}, ${x2 - bend} ${y2}, ${x2} ${y2}`,
+      opacity: Math.min(from.style?.opacity ?? 1, to.style?.opacity ?? 1),
+    }];
+  });
+
+  function collapseAll() {
+    const branchIds = perspective.groups
+      .filter((group) => perspective.groups.some((other) => other.parentId === group.id)
+        || perspective.placements.some((placement) => placement.groupId === group.id))
+      .map((group) => group.id);
+    applyCollapsed(new Set(branchIds), branchIds[0], { fit: true });
+  }
+
+  function expandAll() {
+    applyCollapsed(new Set(), [...collapsed][0], { fit: true });
+  }
+
+  function fitAll(nodeList = graph.nodes) {
+    fitToNodes(nodeList, { padding: 56, source: nodeList });
   }
 
   function changePerspective(nextPerspectiveId) {
+    const nextGraph = layoutCanvas(canvasDocument, recordSets, nextPerspectiveId);
     setPerspectiveId(nextPerspectiveId);
     setSelection([]);
     setQuery("");
     setSearchOpen(false);
-    setGraph(layoutCanvas(canvasDocument, recordSets, nextPerspectiveId));
-    requestAnimationFrame(() => requestAnimationFrame(fitAll));
+    setGraph(nextGraph);
+    fitAll(nextGraph.nodes);
   }
 
   function cycleTheme() {
@@ -407,9 +555,10 @@ function CanvasWorkspace({ loaded, themePreference, setThemePreference }) {
     else await document.documentElement.requestFullscreen();
   }
 
+  // Framing runs straight from the committed layout rather than waiting for an animation
+  // frame, so the canvas opens correctly framed even where frames are throttled.
   useEffect(() => {
-    const frame = requestAnimationFrame(fitAll);
-    return () => cancelAnimationFrame(frame);
+    fitAll();
   }, []);
 
   useEffect(() => {
@@ -437,6 +586,7 @@ function CanvasWorkspace({ loaded, themePreference, setThemePreference }) {
   const sourceHref = canvasDocument.source?.href ? new URL(`index.html#${canvasDocument.source.href}`, HOST_ROOT).href : null;
 
   return (
+    <CanvasActions.Provider value={{ toggleCollapse }}>
     <main className="canvas-app">
       <header className="canvas-toolbar">
         <div className="canvas-toolbar__identity">
@@ -489,7 +639,7 @@ function CanvasWorkspace({ loaded, themePreference, setThemePreference }) {
         </div>
       </header>
 
-      <section className="canvas-workspace">
+      <section ref={paneRef} className={settling ? "canvas-workspace is-settling" : "canvas-workspace"}>
         <ReactFlow
           nodes={nodes}
           edges={[]}
@@ -509,10 +659,12 @@ function CanvasWorkspace({ loaded, themePreference, setThemePreference }) {
           maxZoom={2.5}
           selectionOnDrag={false}
           onMove={(_, viewport) => setZoom(viewport.zoom)}
-          // Node measurements come back through this. Without it the nodes still position
-          // themselves, but the connecting lines have no endpoints to route between and
-          // silently do not render.
-          onNodesChange={(changes) => setNodes((current) => applyNodeChanges(changes, current))}
+          // No onNodesChange handler on purpose. Nodes here are positioned and sized by the
+          // layout, never dragged or resized, and the connecting lines are drawn from that
+          // same layout rather than from measured DOM boxes. Feeding React Flow's change
+          // stream back into state made every measurement pass produce a new node array,
+          // which produced another measurement pass: the canvas re-rendered continuously,
+          // starving animation frames and leaving zoom and framing unable to settle.
           onSelectionChange={({ nodes: selected }) => setSelection(selected)}
           onNodeClick={(_, node) => selectNode(node.id)}
           onPaneClick={() => { setSearchOpen(false); clearSelection(); }}
@@ -522,7 +674,9 @@ function CanvasWorkspace({ loaded, themePreference, setThemePreference }) {
           <Background variant={BackgroundVariant.Dots} gap={24} size={1.5} color="var(--canvas-grid)" />
           <ViewportPortal>
             <svg className="canvas-connectors" aria-hidden="true">
-              {connectors.map((connector) => <path key={connector.id} d={connector.d} />)}
+              {connectorPaths.map((connector) => (
+                <path key={connector.id} d={connector.d} opacity={connector.opacity} />
+              ))}
             </svg>
           </ViewportPortal>
           {minimapOpen ? <MiniMap className="canvas-minimap" pannable zoomable nodeStrokeWidth={2} maskColor="var(--canvas-minimap-mask)" /> : null}
@@ -558,7 +712,10 @@ function CanvasWorkspace({ loaded, themePreference, setThemePreference }) {
           <IconButton label="Zoom out" shortcut="-" onClick={() => flow.zoomOut({ duration })}><Minus /></IconButton>
           <span className="canvas-controls__zoom" aria-label={`Zoom ${Math.round(zoom * 100)} percent`}>{Math.round(zoom * 100)}%</span>
           <span className="canvas-controls__divider" />
-          <IconButton label="Fit all" shortcut="0" onClick={fitAll}><Maximize2 /></IconButton>
+          <IconButton label="Fit all" shortcut="0" onClick={() => fitAll()}><Maximize2 /></IconButton>
+          <span className="canvas-controls__divider" />
+          <IconButton label="Collapse all branches" onClick={collapseAll}><ChevronsDownUp /></IconButton>
+          <IconButton label="Expand all branches" disabled={!collapsed.size} onClick={expandAll}><ChevronsUpDown /></IconButton>
           <IconButton label="Fit selection" shortcut="Shift 2" disabled={!selection.length} onClick={() => focusNodes(selection)}><Focus /></IconButton>
           <IconButton label="Actual size" onClick={() => flow.setViewport({ x: 80, y: 80, zoom: 1 }, { duration })}><ZoomIn /></IconButton>
           <span className="canvas-controls__divider" />
@@ -577,6 +734,7 @@ function CanvasWorkspace({ loaded, themePreference, setThemePreference }) {
         /> : null}
       </section>
     </main>
+    </CanvasActions.Provider>
   );
 }
 

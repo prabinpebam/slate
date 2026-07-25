@@ -109,7 +109,8 @@ assert.ok(
 const sizingConnectors = layoutCanvas(sizingDocument, sizingRecordSets).connectors;
 assert.equal(sizingConnectors.length, 1, "One connector reaches the record enclosure, not one per record.");
 assert.match(sizingConnectors[0].id, /^sizing-group--records$/, "The connector runs from the group to its record enclosure.");
-assert.match(sizingConnectors[0].d, /^M[\d.-]+ [\d.-]+ C/, "Connectors are drawn as curves between known points.");
+assert.equal(sizingConnectors[0].from, "sizing-group", "A connector names the node it starts from.");
+assert.equal(sizingConnectors[0].to, "sizing-group::records", "A connector names the node it ends at, so it can follow them while they move.");
 const sizingGraph = layoutCanvas(sizingDocument, sizingRecordSets);
 const enclosure = sizingGraph.nodes.find((node) => node.type === "slateRecordGroup");
 assert.ok(enclosure, "A group's records are wrapped in one enclosure.");
@@ -152,6 +153,34 @@ const childGap = at("r1c2").position.y - (at("r1c1").position.y + at("r1c1").sty
 assert.ok(rootGap > childGap, `Top-level branches must sit further apart than their children (${rootGap} vs ${childGap})`);
 assert.ok(at("r1c1").position.x > at("r1").position.x, "Each level steps to the right of its parent.");
 assert.equal(at("r1c1").position.x, at("r1c2").position.x, "Siblings share a column.");
+
+// Collapsing hides a whole subtree and reports what it folded away, so the node can say
+// what is behind it rather than looking like a leaf.
+const collapsedGraph = layoutCanvas(depthDocument, recordSets, undefined, { collapsed: ["r1"] });
+const collapsedRoot = collapsedGraph.nodes.find((node) => node.id === "r1");
+assert.equal(collapsedRoot.data.collapsed, true, "A collapsed group reports that it is collapsed.");
+assert.equal(collapsedRoot.data.hiddenAreas, 2, "A collapsed group reports the areas it folded away.");
+assert.equal(collapsedRoot.data.hiddenRecords, 1, "A collapsed group reports the records it folded away.");
+assert.ok(
+  !collapsedGraph.nodes.some((node) => ["r1c1", "r1c2", "depth-p1"].includes(node.id)),
+  "A collapsed subtree emits no nodes.",
+);
+assert.ok(
+  collapsedGraph.nodes.some((node) => node.id === "r2"),
+  "Collapsing one branch leaves its siblings alone.",
+);
+assert.ok(
+  collapsedGraph.connectors.every((connector) => connector.from !== "r1"),
+  "A collapsed group has no connectors leaving it.",
+);
+const expandedRoot = depthGraph.nodes.find((node) => node.id === "r1");
+assert.equal(expandedRoot.data.collapsed, false, "An expanded group reports that it is expanded.");
+assert.equal(expandedRoot.data.hasBranch, true, "A group with children advertises that it can be collapsed.");
+assert.equal(
+  depthGraph.nodes.find((node) => node.id === "r2").data.hasBranch,
+  false,
+  "A group with nothing beneath it offers no collapse affordance.",
+);
 
 const multiPerspectiveDocument = {
   ...document,

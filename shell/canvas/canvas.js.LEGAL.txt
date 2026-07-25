@@ -84,6 +84,8 @@ lucide-react/dist/esm/createLucideIcon.js:
 lucide-react/dist/esm/icons/check.js:
 lucide-react/dist/esm/icons/chevron-down.js:
 lucide-react/dist/esm/icons/chevron-right.js:
+lucide-react/dist/esm/icons/chevrons-down-up.js:
+lucide-react/dist/esm/icons/chevrons-up-down.js:
 lucide-react/dist/esm/icons/external-link.js:
 lucide-react/dist/esm/icons/focus.js:
 lucide-react/dist/esm/icons/fullscreen.js:

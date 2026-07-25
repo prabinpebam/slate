@@ -404,32 +404,31 @@ function measureGroupCard(group, depth) {
   };
 }
 
-export function layoutCanvas(document, recordSets, perspectiveId) {
+export function layoutCanvas(document, recordSets, perspectiveId, options = {}) {
   const perspective = canvasPerspective(document, perspectiveId);
   const resolvedPlacements = resolveCanvasRecords(document, recordSets, perspective.id);
   const placementsByGroup = Map.groupBy(resolvedPlacements, (placement) => placement.groupId);
   const childGroups = Map.groupBy(perspective.groups.filter((group) => group.parentId), (group) => group.parentId);
   const groupById = new Map(perspective.groups.map((group) => [group.id, group]));
   const recordColumns = perspective.presentation?.recordColumns || TREE.recordColumns;
+  const collapsed = new Set(options.collapsed ?? []);
   const nodes = [];
   const connectors = [];
 
-  // The connecting lines are drawn from the positions this layout already computes, not
-  // routed by the flow library. The library needs measured nodes and handle bounds before
-  // it will draw an edge, which a read-only canvas never produces; and since every
-  // position here is exact, a curve between two known points is both simpler and stable.
+  // Connectors name the two nodes they join rather than carrying a finished path. The
+  // renderer derives the curve from wherever those nodes currently are, so a line follows
+  // its nodes through an animation instead of snapping to the final layout.
   function connect(id, from, to) {
-    const x1 = from.x + from.width;
-    const y1 = Math.round(from.y + from.height / 2);
-    const x2 = to.x;
-    const y2 = Math.round(to.y + to.height / 2);
-    const bend = Math.max(16, (x2 - x1) * 0.5);
-    connectors.push({ id, d: `M${x1} ${y1} C${x1 + bend} ${y1}, ${x2 - bend} ${y2}, ${x2} ${y2}` });
+    connectors.push({ id, from, to });
   }
 
   function countDescendantPlacements(groupId) {
     return (placementsByGroup.get(groupId)?.length || 0)
       + (childGroups.get(groupId) || []).reduce((sum, child) => sum + countDescendantPlacements(child.id), 0);
+  }
+
+  function countDescendantGroups(groupId) {
+    return (childGroups.get(groupId) || []).reduce((sum, child) => sum + 1 + countDescendantGroups(child.id), 0);
   }
 
   // Tone inherits down the whole ancestor chain, not just from the immediate parent.
@@ -448,6 +447,27 @@ export function layoutCanvas(document, recordSets, perspectiveId) {
   function build(groupId, depth) {
     const group = groupById.get(groupId);
     const card = measureGroupCard(group, depth);
+    const isCollapsed = collapsed.has(groupId);
+    const hiddenRecords = countDescendantPlacements(groupId);
+    const hiddenAreas = countDescendantGroups(groupId);
+    const hasBranch = hiddenRecords > 0 || hiddenAreas > 0;
+
+    if (isCollapsed) {
+      return {
+        group,
+        depth,
+        card,
+        grid: { placed: [], width: 0, height: 0 },
+        wrap: { width: 0, height: 0 },
+        children: [],
+        collapsed: true,
+        hasBranch,
+        hiddenRecords,
+        hiddenAreas,
+        subtreeHeight: card.height,
+      };
+    }
+
     const records = ordered(placementsByGroup.get(groupId) || []).map((placement) => ({
       placement,
       ...measureRecordCard(placement.record),
@@ -466,7 +486,19 @@ export function layoutCanvas(document, recordSets, perspectiveId) {
       ? branches.reduce((sum, height) => sum + height, 0) + gap * (branches.length - 1)
       : 0;
 
-    return { group, depth, card, grid, wrap, children, subtreeHeight: Math.max(card.height, branchHeight) };
+    return {
+      group,
+      depth,
+      card,
+      grid,
+      wrap,
+      children,
+      collapsed: false,
+      hasBranch,
+      hiddenRecords: 0,
+      hiddenAreas: 0,
+      subtreeHeight: Math.max(card.height, branchHeight),
+    };
   }
 
   // Every depth gets one column, wide enough for the widest thing in it, so cards line up
@@ -499,6 +531,10 @@ export function layoutCanvas(document, recordSets, perspectiveId) {
         route: node.group.route,
         role: node.group.role,
         sections: node.group.sections,
+        collapsed: node.collapsed,
+        hasBranch: node.hasBranch,
+        hiddenRecords: node.hiddenRecords,
+        hiddenAreas: node.hiddenAreas,
       },
     });
 
@@ -537,13 +573,13 @@ export function layoutCanvas(document, recordSets, perspectiveId) {
           data: { ...card.placement.record, placementId: card.placement.id, tone },
         });
       }
-      connect(`${node.group.id}--records`, box, wrapBox);
+      connect(`${node.group.id}--records`, node.group.id, `${node.group.id}::records`);
       cursor += wrapBox.height + gap;
     }
 
     for (const child of node.children) {
       const childBox = place(child, cursor, columnX);
-      connect(`${node.group.id}--${child.group.id}`, box, childBox);
+      connect(`${node.group.id}--${child.group.id}`, node.group.id, child.group.id);
       cursor += child.subtreeHeight + gap;
     }
 
