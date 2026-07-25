@@ -35,7 +35,7 @@ const recordSets = new Map([[recordSet.id, recordSet]]);
 
 assert.deepEqual(validateRecordSet(recordSet), []);
 assert.deepEqual(validateCanvasDocument(document, recordSets), []);
-assert.equal(layoutCanvas(document, recordSets).nodes.length, 7, "Two groups, three placements, and one enclosure per group holding records.");
+assert.equal(layoutCanvas(document, recordSets).nodes.length, 5, "Two group boxes and three placements: a group is its own container, so nothing extra stands in for it.");
 assert.equal(document.placements.filter((placement) => placement.recordRef.recordId === "REC-01").length, 2, "A record may appear in multiple groups.");
 assert.equal(canvasPerspectives(document).length, 1, "Legacy documents expose one normalized perspective.");
 
@@ -99,30 +99,34 @@ const longCard = sizingNodes.find((node) => node.id === "sizing-placement-2");
 const sizingGroup = sizingNodes.find((node) => node.id === "sizing-group");
 assert.ok(shortCard.style.width < longCard.style.width, "Each card hugs its own text width.");
 assert.ok(longCard.style.height > shortCard.style.height, "A wrapped title grows only its own card height.");
-// A group is a tree node, not a container, so its own card is not sized to hold its
-// records. The records sit in the next column, joined by connecting lines.
-assert.ok(sizingGroup.style.height < shortCard.style.height, "A group card is header-sized, not sized to contain its records.");
-assert.ok(
-  shortCard.position.x > sizingGroup.position.x + sizingGroup.style.width,
-  "Records are placed to the right of their group, not inside it.",
+// A group is the box its records sit in. There is no separate node standing for the view
+// or section and no unnamed enclosure beside it: the named box is the container.
+assert.ok(sizingGroup.style.height > shortCard.style.height, "A group box is sized to hold its own records.");
+assert.equal(
+  layoutCanvas(sizingDocument, sizingRecordSets).nodes.filter((node) => node.type === "slateRecordGroup").length,
+  0,
+  "Records are never wrapped in a separate unnamed enclosure node.",
 );
-const sizingConnectors = layoutCanvas(sizingDocument, sizingRecordSets).connectors;
-assert.equal(sizingConnectors.length, 1, "One connector reaches the record enclosure, not one per record.");
-assert.match(sizingConnectors[0].id, /^sizing-group--records$/, "The connector runs from the group to its record enclosure.");
-assert.equal(sizingConnectors[0].from, "sizing-group", "A connector names the node it starts from.");
-assert.equal(sizingConnectors[0].to, "sizing-group::records", "A connector names the node it ends at, so it can follow them while they move.");
+assert.equal(
+  layoutCanvas(sizingDocument, sizingRecordSets).connectors.length,
+  0,
+  "A group needs no connector to its own records, because it already contains them.",
+);
 const sizingGraph = layoutCanvas(sizingDocument, sizingRecordSets);
-const enclosure = sizingGraph.nodes.find((node) => node.type === "slateRecordGroup");
-assert.ok(enclosure, "A group's records are wrapped in one enclosure.");
 for (const record of sizingGraph.nodes.filter((node) => node.type === "slateRecord")) {
   assert.ok(
-    record.position.x >= enclosure.position.x
-      && record.position.y >= enclosure.position.y
-      && record.position.x + record.style.width <= enclosure.position.x + enclosure.style.width
-      && record.position.y + record.style.height <= enclosure.position.y + enclosure.style.height,
-    `${record.id} must sit inside its enclosure`,
+    record.position.x >= sizingGroup.position.x
+      && record.position.y >= sizingGroup.position.y
+      && record.position.x + record.style.width <= sizingGroup.position.x + sizingGroup.style.width
+      && record.position.y + record.style.height <= sizingGroup.position.y + sizingGroup.style.height,
+    `${record.id} must sit inside its own group box`,
   );
 }
+assert.ok(
+  sizingGraph.nodes.findIndex((node) => node.id === "sizing-group")
+    < sizingGraph.nodes.findIndex((node) => node.id === "sizing-placement-1"),
+  "A group box is emitted before the records it holds, so it paints behind them.",
+);
 const overlapping = shortCard.position.x < longCard.position.x + longCard.style.width
   && longCard.position.x < shortCard.position.x + shortCard.style.width
   && shortCard.position.y < longCard.position.y + longCard.style.height
@@ -199,7 +203,7 @@ delete multiPerspectiveDocument.presentation;
 assert.deepEqual(validateCanvasDocument(multiPerspectiveDocument, recordSets), []);
 assert.equal(canvasPerspectives(multiPerspectiveDocument).length, 2);
 assert.equal(canvasPerspective(multiPerspectiveDocument, "by-owner").title, "By owner");
-assert.equal(layoutCanvas(multiPerspectiveDocument, recordSets, "by-owner").nodes.length, 5, "Selected perspective should control layout nodes.");
+assert.equal(layoutCanvas(multiPerspectiveDocument, recordSets, "by-owner").nodes.length, 4, "Selected perspective should control layout nodes.");
 
 const mutations = [
   ["duplicate records", { ...recordSet, records: [...recordSet.records, recordSet.records[0]] }, validateRecordSet, /duplicates REC-01/],

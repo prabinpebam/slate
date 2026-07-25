@@ -50,7 +50,6 @@ import "./canvas.css";
 
 const nodeTypes = {
   slateGroup: GroupNode,
-  slateRecordGroup: RecordGroupNode,
   slateRecord: RecordNode,
 };
 
@@ -192,7 +191,7 @@ function GroupNode({ id, data, selected }) {
     data.hiddenRecords ? `${data.hiddenRecords} record${data.hiddenRecords === 1 ? "" : "s"}` : null,
   ].filter(Boolean).join(" \u00b7 ");
   return (
-    <section className={`canvas-group canvas-group--depth-${data.depth} canvas-tone--${data.tone}${selected ? " is-selected" : ""}${data.collapsed ? " is-collapsed" : ""}`}>
+    <section className={`canvas-group canvas-group--depth-${data.depth} canvas-tone--${data.tone}${selected ? " is-selected" : ""}${data.collapsed ? " is-collapsed" : ""}${data.holdsRecords ? " holds-records" : ""}`}>
       <header className="canvas-group__header">
         {data.hasBranch ? (
           <button
@@ -218,10 +217,6 @@ function GroupNode({ id, data, selected }) {
       </header>
     </section>
   );
-}
-
-function RecordGroupNode({ data }) {
-  return <div className={`canvas-record-group canvas-tone--${data.tone}`} aria-hidden="true" />;
 }
 
 function RecordNode({ data, selected }) {

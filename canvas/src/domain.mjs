@@ -382,10 +382,12 @@ const TREE = {
   recordColumns: 3,
   groupMinWidth: 176,
   groupMaxWidth: 300,
-  // A group's records live inside one enclosure. One connector reaches the enclosure
-  // instead of one per record, which would fan out into a spaghetti of lines.
-  recordWrapPadding: 12,
-  recordWrapHeader: 0,
+  // A group is the box its records sit in. There is no separate node standing for the
+  // view or section: the named box is the view or section, and the records it holds are
+  // drawn inside it. Child groups are boxes of their own, joined by a connecting line.
+  // The left inset clears the tone border so records line up with the header text.
+  recordInsetLeft: 14,
+  recordInset: 12,
 };
 
 function levelGap(depth) {
@@ -396,11 +398,16 @@ function siblingGap(depth) {
   return TREE.siblingGap[Math.min(Math.max(depth, 0), TREE.siblingGap.length - 1)];
 }
 
-function measureGroupCard(group, depth) {
+// A group box is measured to hold its own header and its own records. An empty group is
+// header-sized; a group holding records grows to enclose them.
+function measureGroupCard(group, depth, grid) {
   const header = measureGroupHeader(group, depth);
+  const headerWidth = Math.min(TREE.groupMaxWidth, Math.max(TREE.groupMinWidth, header.width));
+  const recordsWidth = grid.height ? grid.width + TREE.recordInsetLeft + TREE.recordInset : 0;
   return {
-    width: Math.round(Math.min(TREE.groupMaxWidth, Math.max(TREE.groupMinWidth, header.width))),
-    height: Math.round(header.height + GROUP_BOX.border * 2),
+    width: Math.round(Math.max(headerWidth, recordsWidth)),
+    height: Math.round(header.height + (grid.height ? grid.height + TREE.recordInset : 0) + GROUP_BOX.border * 2),
+    headerHeight: header.height,
   };
 }
 
@@ -446,19 +453,19 @@ export function layoutCanvas(document, recordSets, perspectiveId, options = {}) 
 
   function build(groupId, depth) {
     const group = groupById.get(groupId);
-    const card = measureGroupCard(group, depth);
     const isCollapsed = collapsed.has(groupId);
     const hiddenRecords = countDescendantPlacements(groupId);
     const hiddenAreas = countDescendantGroups(groupId);
     const hasBranch = hiddenRecords > 0 || hiddenAreas > 0;
+    const emptyGrid = { placed: [], width: 0, height: 0 };
 
     if (isCollapsed) {
+      const card = measureGroupCard(group, depth, emptyGrid);
       return {
         group,
         depth,
         card,
-        grid: { placed: [], width: 0, height: 0 },
-        wrap: { width: 0, height: 0 },
+        grid: emptyGrid,
         children: [],
         collapsed: true,
         hasBranch,
@@ -472,18 +479,15 @@ export function layoutCanvas(document, recordSets, perspectiveId, options = {}) 
       placement,
       ...measureRecordCard(placement.record),
     }));
-    const grid = packBoxes(records, packWidth(records, CARD.gap, recordColumns, recordColumns * CARD.maxWidth), CARD.gap);
-    const wrap = grid.height
-      ? { width: grid.width + TREE.recordWrapPadding * 2, height: grid.height + TREE.recordWrapPadding * 2 }
-      : { width: 0, height: 0 };
+    const grid = records.length
+      ? packBoxes(records, packWidth(records, CARD.gap, recordColumns, recordColumns * CARD.maxWidth), CARD.gap)
+      : emptyGrid;
+    const card = measureGroupCard(group, depth, grid);
     const children = ordered(childGroups.get(groupId) || []).map((child) => build(child.id, depth + 1));
 
     const gap = siblingGap(depth + 1);
-    const branches = [];
-    if (wrap.height) branches.push(wrap.height);
-    for (const child of children) branches.push(child.subtreeHeight);
-    const branchHeight = branches.length
-      ? branches.reduce((sum, height) => sum + height, 0) + gap * (branches.length - 1)
+    const branchHeight = children.length
+      ? children.reduce((sum, child) => sum + child.subtreeHeight, 0) + gap * (children.length - 1)
       : 0;
 
     return {
@@ -491,7 +495,6 @@ export function layoutCanvas(document, recordSets, perspectiveId, options = {}) 
       depth,
       card,
       grid,
-      wrap,
       children,
       collapsed: false,
       hasBranch,
@@ -501,17 +504,19 @@ export function layoutCanvas(document, recordSets, perspectiveId, options = {}) 
     };
   }
 
-  // Every depth gets one column, wide enough for the widest thing in it, so cards line up
+  // Every depth gets one column, wide enough for the widest box in it, so boxes line up
   // and the connecting lines stay readable instead of crossing at random angles.
   function collectColumnWidths(node, widths) {
     widths[node.depth] = Math.max(widths[node.depth] ?? 0, node.card.width);
-    if (node.wrap.width) widths[node.depth + 1] = Math.max(widths[node.depth + 1] ?? 0, node.wrap.width);
     for (const child of node.children) collectColumnWidths(child, widths);
   }
 
   function place(node, yTop, columnX) {
     const y = Math.round(yTop + (node.subtreeHeight - node.card.height) / 2);
     const box = { x: columnX[node.depth], y, width: node.card.width, height: node.card.height };
+    const tone = node.group.tone || resolveTone(node.group.parentId ?? null) || "neutral";
+
+    // Pushed before its own records so the box paints behind the cards it holds.
     nodes.push({
       id: node.group.id,
       type: "slateGroup",
@@ -524,7 +529,7 @@ export function layoutCanvas(document, recordSets, perspectiveId, options = {}) 
       data: {
         title: node.group.title,
         description: node.group.description,
-        tone: node.group.tone || resolveTone(node.group.parentId ?? null) || "neutral",
+        tone,
         count: countDescendantPlacements(node.group.id),
         depth: node.depth,
         level: node.group.level,
@@ -535,50 +540,31 @@ export function layoutCanvas(document, recordSets, perspectiveId, options = {}) 
         hasBranch: node.hasBranch,
         hiddenRecords: node.hiddenRecords,
         hiddenAreas: node.hiddenAreas,
+        holdsRecords: node.grid.placed.length,
       },
     });
 
-    const childColumn = columnX[node.depth + 1];
-    const gap = siblingGap(node.depth + 1);
-    let cursor = yTop;
-
-    if (node.wrap.height) {
-      const tone = node.group.tone || resolveTone(node.group.parentId ?? null) || "neutral";
-      const wrapBox = { x: childColumn, y: Math.round(cursor), width: node.wrap.width, height: node.wrap.height };
-      // Pushed before its records so the enclosure paints behind them.
+    for (const card of node.grid.placed) {
       nodes.push({
-        id: `${node.group.id}::records`,
-        type: "slateRecordGroup",
-        position: { x: wrapBox.x, y: wrapBox.y },
-        selectable: false,
+        id: card.placement.id,
+        type: "slateRecord",
+        position: {
+          x: Math.round(box.x + TREE.recordInsetLeft + card.x),
+          y: Math.round(box.y + node.card.headerHeight + card.y),
+        },
+        selectable: true,
         draggable: false,
-        width: wrapBox.width,
-        height: wrapBox.height,
-        style: { width: wrapBox.width, height: wrapBox.height },
-        data: { tone, count: node.grid.placed.length, ownerId: node.group.id, ownerTitle: node.group.title },
+        width: card.width,
+        height: card.height,
+        style: { width: card.width, height: card.height },
+        data: { ...card.placement.record, placementId: card.placement.id, tone },
       });
-      for (const card of node.grid.placed) {
-        nodes.push({
-          id: card.placement.id,
-          type: "slateRecord",
-          position: {
-            x: Math.round(wrapBox.x + TREE.recordWrapPadding + card.x),
-            y: Math.round(wrapBox.y + TREE.recordWrapPadding + card.y),
-          },
-          selectable: true,
-          draggable: false,
-          width: card.width,
-          height: card.height,
-          style: { width: card.width, height: card.height },
-          data: { ...card.placement.record, placementId: card.placement.id, tone },
-        });
-      }
-      connect(`${node.group.id}--records`, node.group.id, `${node.group.id}::records`);
-      cursor += wrapBox.height + gap;
     }
 
+    const gap = siblingGap(node.depth + 1);
+    let cursor = yTop;
     for (const child of node.children) {
-      const childBox = place(child, cursor, columnX);
+      place(child, cursor, columnX);
       connect(`${node.group.id}--${child.group.id}`, node.group.id, child.group.id);
       cursor += child.subtreeHeight + gap;
     }
