@@ -321,12 +321,25 @@ function CanvasWorkspace({ loaded, themePreference, setThemePreference }) {
     flow.fitView({ nodes: targetNodes, padding: targetNodes.length === 1 ? 0.8 : 0.18, duration, maxZoom: 1.35 });
   }
 
-  function focusNode(nodeId) {
+  // Selecting is separate from focusing. A click selects what the reader pointed at and
+  // leaves the viewport alone; the outline and search also move the viewport.
+  function selectNode(nodeId) {
     const node = flow.getNode(nodeId);
-    if (!node) return;
+    if (!node) return null;
     setNodes((current) => current.map((item) => ({ ...item, selected: item.id === nodeId })));
     setSelection([node]);
     setSearchOpen(false);
+    return node;
+  }
+
+  function clearSelection() {
+    setNodes((current) => current.map((item) => (item.selected ? { ...item, selected: false } : item)));
+    setSelection([]);
+  }
+
+  function focusNode(nodeId) {
+    const node = selectNode(nodeId);
+    if (!node) return;
     focusNodes([node]);
   }
 
@@ -455,7 +468,8 @@ function CanvasWorkspace({ loaded, themePreference, setThemePreference }) {
           selectionOnDrag={false}
           onMove={(_, viewport) => setZoom(viewport.zoom)}
           onSelectionChange={({ nodes: selected }) => setSelection(selected)}
-          onPaneClick={() => setSearchOpen(false)}
+          onNodeClick={(_, node) => selectNode(node.id)}
+          onPaneClick={() => { setSearchOpen(false); clearSelection(); }}
           proOptions={{ hideAttribution: false }}
           aria-label={canvasDocument.title}
         >
