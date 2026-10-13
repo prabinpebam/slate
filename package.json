@@ -1,6 +1,6 @@
 {
   "name": "@slate/docs",
-  "version": "0.10.1",
+  "version": "0.10.3",
   "description": "Slate is a project-agnostic documentation system and agent skill for visual-first static documentation sites.",
   "private": true,
   "type": "module",
@@ -13,6 +13,8 @@
     "test:chart": "node scripts/test-chart.mjs",
     "test:presentation-motion": "node scripts/test-presentation-motion.mjs",
     "test:portability": "node scripts/test-portability.mjs",
+    "test:reader-personas": "node scripts/test-reader-personas.mjs",
+    "test:navigation": "node scripts/test-navigation.mjs",
     "test:runtime-host": "node scripts/test-runtime-host.mjs",
     "test:svg-illustration": "node scripts/test-svg-illustration.mjs",
     "validate:attributions": "node scripts/validate-document-attributions.mjs",

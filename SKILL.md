@@ -547,18 +547,21 @@ chart data never leaves the machine and output is reproducible from the committe
 9. **Save visualization assets locally** under `assets/`; reference relative paths.
 10. Links are **relative** to real content paths; the runtime rewrites them to hash routes.
 11. **Update `docs-manifest.json`** for every page (path, title, order, group).
-12. **Preserve source material** - generate alongside inputs, never overwrite them.
-13. **Accessibility**: alt text on every image/chart, semantic markup, keyboard-reachable components.
-14. **No emoji** - use an approved icon source instead. See
+12. **Reader personas prioritize; they do not fork.** When a host configures reader personas, use
+  `data-reader-personas` on `h2` or `h3` only to set default expansion. Selection never changes
+  meaning, searchability, deep links, or the presence of canonical requirements.
+13. **Preserve source material** - generate alongside inputs, never overwrite them.
+14. **Accessibility**: alt text on every image/chart, semantic markup, keyboard-reachable components.
+15. **No emoji** - use an approved icon source instead. See
     [iconography](visualization/skills/iconography/SKILL.md) and [`assets/icons/`](assets/icons/).
-15. **No fabrication** - every fact, number, and data point must trace to the provided inputs. Do
+16. **No fabrication** - every fact, number, and data point must trace to the provided inputs. Do
     not invent data to make a nicer chart.
-16. **Give every page a content-appropriate `icon`** in the manifest (a Material Symbols Outlined
+17. **Give every page a content-appropriate `icon`** in the manifest (a Material Symbols Outlined
     name). Never leave the default document icon on every page (see [Page icons](#page-icons)).
-17. **No meta-documentation by default.** Reviews, audits, validation passes, and gap analyses update
+18. **No meta-documentation by default.** Reviews, audits, validation passes, and gap analyses update
   the durable pages they evaluate. Do not create review reports, closure records, point-in-time snapshots,
   or pages about the documentation unless the user explicitly requests a versioned record.
-18. **Generic-first evolution.** Reusable capabilities and fixes land with package tests before host
+19. **Generic-first evolution.** Reusable capabilities and fixes land with package tests before host
   adoption. Host content, authority, branding, and policy never become generic defaults.
 ## Self-validation checklist
 

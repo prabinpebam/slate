@@ -68,6 +68,9 @@ try {
   const globalLaterMotion = { ...generated, slides: { hook: { ...generated.slides.hook, fragments: [{ id: "proof" }, { id: "second" }], targets: [{ id: "second-marker", recipe: "shape-pop", fragmentId: "second", startMs: 400 }] } } };
   assert.ok(validate(globalLaterMotion, secondFragmentPage).some(error => error.includes("must use revealOffsetMs instead of startMs")));
   const packageRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname.replace(/^\/(?:[A-Za-z]:)/, match => match.slice(1))), "..");
+  const presentationCss = fs.readFileSync(path.join(packageRoot, "shell", "slate.css"), "utf8");
+  assert.match(presentationCss, /\.slate-deck\s*\{[^}]*align-items:\s*center;/s, "Reading-mode slides must be centered");
+  assert.match(presentationCss, /\.slate-slide\s*\{[^}]*max-width:\s*min\(100%,\s*124\.444vh,\s*1208\.889px\);/s, "Reading-mode slides must not exceed 16:9");
   const generatedPage = path.join(packageRoot, "demo", "generated-motion.html");
   const generatedMotion = path.join(packageRoot, "demo", "generated-motion.json");
   assert.deepEqual(validatePresentationMotion({ pagePath: generatedPage, motionPath: generatedMotion }), []);

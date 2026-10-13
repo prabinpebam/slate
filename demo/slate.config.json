@@ -3,5 +3,10 @@
   "brandColor": "#0F6CBD",
   "defaultTheme": "auto",
   "density": "comfortable",
-  "landing": "landing.html"
+  "landing": "landing.html",
+  "readerPersonas": [
+    { "id": "author", "label": "Authors" },
+    { "id": "reviewer", "label": "Reviewers" }
+  ],
+  "defaultReaderPersona": "all"
 }

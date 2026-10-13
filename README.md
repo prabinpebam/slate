@@ -42,6 +42,40 @@ Keep local preview servers bound to loopback. Do not bind this basic server to `
 The viewer needs HTTP (it cannot run from `file://`). Check desktop/mobile layout, keyboard use,
 light/dark themes, navigation, search, and any visualizations changed by the work.
 
+## Reader navigation
+
+The navigation tree and breadcrumbs use the same hierarchy: a page's manifest `group` is its
+complete logical folder path; without a group, Slate uses the page's physical folders. Folder
+breadcrumbs reveal and focus that folder in the navigation tree without changing the page. The
+current page is identified in both places, and opening a page expands its ancestors automatically.
+
+The header's navigation button hides or shows the desktop sidebar without resetting the page,
+scroll position, expanded folders or resized width. The desktop preference is remembered per host.
+On narrow screens it opens a temporary navigation drawer instead; Escape, the backdrop or selecting
+a page closes it. Mobile opening does not overwrite the desktop preference. Folder breadcrumbs can
+reopen navigation at any screen size. Long breadcrumb paths wrap rather than hiding their ancestry.
+
+Run the focused hierarchy regression with `npm run test:navigation`. Its exported
+`testNavigationBrowser(browser, options)` accepts an already-installed Playwright browser and an
+HTTP demo or host URL for rendered keyboard, persistence and responsive checks; no browser download
+is performed by Slate.
+
+## Reader-persona disclosure
+
+Hosts may configure `readerPersonas` and `defaultReaderPersona` in `slate.config.json` or the v2
+manifest config. The optional "View for" selector prioritizes tagged sections without removing
+content, search results, TOC entries, or deep links. See the
+[component contract](components/README.md#reader-persona-disclosure); the demo's component gallery
+includes author and reviewer perspectives.
+Run `npm run test:reader-personas` for the contract and saved-preference checks. Its exported
+`testReaderPersonasBrowser(browser, options)` exercises the demo's disclosure, search, deep links,
+responsive controls, and unconfigured-host behavior using an already-installed Playwright browser.
+
+Existing hosts own their root `index.html`, so runtime synchronization does not add new header
+controls. To enable personas there, copy the `reader-persona` header block from `shell/index.html`
+into the host entry before its theme toggle. Hosts without persona configuration keep their
+existing disclosure behavior.
+
 ## What's here
 
 ```
@@ -131,6 +165,8 @@ npm run test:runtime-host
 npm run test:portability
 npm run test:attributions
 npm run test:presentation-motion
+npm run test:reader-personas
+npm run test:navigation
 npm run test:canvas-contracts
 npm run test:svg-illustration
 npm run validate:svg-illustration

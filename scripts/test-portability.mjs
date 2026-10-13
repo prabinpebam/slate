@@ -28,6 +28,7 @@ try {
   assert.match(index, /<link rel="stylesheet" href="shell\/slate\.css">\s+<link rel="stylesheet" href="project\.theme\.css">/);
   assert.doesNotMatch(index, /href="(?:vendor|slate\.)/);
   assert.match(index, /<script src="shell\/presentation\.js"><\/script>\s+<script src="shell\/slate\.js"><\/script>/);
+  assert.match(index, /id="reader-persona-select" aria-describedby="reader-persona-status"/);
   assert.equal(fs.existsSync(path.join(repoRoot, "docs", "shell", "canvas", "index.html")), true);
   assert.equal(fs.existsSync(path.join(repoRoot, "docs", "shell", "canvas", "canvas.js")), true);
   assert.match(fs.readFileSync(path.join(repoRoot, "docs", "slate.config.json"), "utf8"), /"themeStylesheet": "project\.theme\.css"/);
