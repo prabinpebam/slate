@@ -4,6 +4,7 @@ import vm from 'node:vm';
 
 const runtime = fs.readFileSync(new URL('../shell/slate.js', import.meta.url), 'utf8');
 const context = vm.createContext({
+  URL,
   document: {
     createElement: () => ({
       textContent: '',
@@ -13,8 +14,8 @@ const context = vm.createContext({
 });
 const bootstrap = runtime.indexOf("  if (document.readyState === 'loading')");
 assert.ok(bootstrap > 0);
-vm.runInContext(runtime.slice(0, bootstrap) + 'globalThis.navigation = { state, navigationGroups, buildFileTree, renderBreadcrumbs }; })();', context);
-const { state, navigationGroups, buildFileTree, renderBreadcrumbs } = context.navigation;
+vm.runInContext(runtime.slice(0, bootstrap) + 'globalThis.navigation = { state, navigationGroups, buildFileTree, renderBreadcrumbs, leavesParentDomain }; })();', context);
+const { state, navigationGroups, buildFileTree, renderBreadcrumbs, leavesParentDomain } = context.navigation;
 state.landing = 'home.html';
 state.docs.set('generated/2027/frameworks/navigation.html', { title: 'Navigation', group: 'Product/Mobile/Frameworks', order: 1 });
 state.docs.set('guides/setup/install.md', { title: 'Install', order: 2 });
@@ -38,7 +39,15 @@ assert.match(renderBreadcrumbs('guides/setup/install.md'), /data-nav-folder="gui
 assert.match(renderBreadcrumbs('quotes.html'), /Costs &amp; benefits/i);
 assert.match(renderBreadcrumbs('quotes.html'), /Reader%20%22questions%22/);
 assert.match(renderBreadcrumbs('quotes.html'), /&lt;Page&gt;/);
-console.log('Slate navigation hierarchy tests passed (14 assertions).');
+// links: the documentation's own domain (served, or parentDomain and its subdomains) keeps the tab; anywhere else leaves it
+assert.equal(leavesParentDomain('https://example.github.io/site/', 'localhost', 'example.github.io'), false);
+assert.equal(leavesParentDomain('https://docs.example.github.io/', 'localhost', 'example.github.io'), false);
+assert.equal(leavesParentDomain('https://localhost/other/', 'localhost', ''), false);
+assert.equal(leavesParentDomain('https://github.com/example/repo', 'localhost', 'example.github.io'), true);
+assert.equal(leavesParentDomain('https://notexample.github.io/', 'localhost', 'example.github.io'), true);
+assert.equal(leavesParentDomain('https://github.com/x', 'example.github.io', ''), true);
+assert.equal(leavesParentDomain('guide.md', 'localhost', 'example.github.io'), false);
+console.log('Slate navigation hierarchy and link tests passed (21 assertions).');
 
 export async function testNavigationBrowser(browser, { url, groups, screenshots }) {
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });

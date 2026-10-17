@@ -71,6 +71,14 @@ Run `npm run test:reader-personas` for the contract and saved-preference checks.
 `testReaderPersonasBrowser(browser, options)` exercises the demo's disclosure, search, deep links,
 responsive controls, and unconfigured-host behavior using an already-installed Playwright browser.
 
+## Links that leave the documentation
+
+A link to the documentation's own domain stays in the reader's tab; a link anywhere else opens in a
+new tab and says so to screen readers ("opens in a new tab"). The own domain is the one the docs are
+served from, and also `parentDomain` in `slate.config.json` with its subdomains, for documentation
+served alongside the site it documents (for example `parentDomain: "example.github.io"` keeps links
+to the published site in the tab while the docs are read locally). Run `npm run test:navigation`.
+
 Existing hosts own their root `index.html`, so runtime synchronization does not add new header
 controls. To enable personas there, copy the `reader-persona` header block from `shell/index.html`
 into the host entry before its theme toggle. Hosts without persona configuration keep their
