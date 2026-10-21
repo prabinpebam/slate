@@ -138,7 +138,7 @@ slate/
       index.html
       canvas.js
       canvas.css
-      canvas.js.LEGAL.txt
+      THIRD_PARTY_NOTICES.txt
 ```
 
 The editable authority is under `canvas/`, `schema/`, and `scripts/`. `shell/canvas/` is generated

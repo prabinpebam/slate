@@ -38,6 +38,7 @@ The full contribution rules are in
 | Canvas domain or application | `npm run test:canvas-contracts`, build, runtime check, and actual host browser checks |
 | Chart or SVG authoring | Corresponding chart/SVG tests, structural validation, and actual render inspection |
 | Presentation motion | `npm run test:presentation-motion` and the affected deck in reading/presenter modes |
+| Vendored libraries or Canvas dependencies | `npm run test:third-party-notices`, after updating the [notices](third-party-notices.md) |
 
 Expand validation only when an observed failure, shared dependency, or public-contract change
 warrants it. Structural validation does not replace accessibility, theme, or viewport inspection.
@@ -63,7 +64,8 @@ npm run build:canvas
 ```
 
 Build it **before** synchronizing any host, since rebuilding changes the recorded hashes.
-Never edit generated bundles directly.
+Never edit generated bundles directly. The build also writes `shell/canvas/THIRD_PARTY_NOTICES.txt`
+with the full license text of every bundled package, so a dependency change updates its notices.
 
 From a consuming repository root:
 

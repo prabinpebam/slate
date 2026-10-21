@@ -117,7 +117,8 @@ allowlist from defects found after the fact.
   omit the icon or redesign the node; do not invent a familiar-looking glyph.
 - Record provenance on the semantic icon group, for example
   `data-slate-icon-source="fluent" data-slate-icon-name="checkmark-regular-24"`, and record the
-  source path/version and license in the visual brief or adjacent source comment.
+  source path/version and license in the visual brief or adjacent source comment. Font Awesome icons
+  also need a visible CC BY 4.0 attribution; see [`iconography`](../iconography/SKILL.md).
 - Normalize size, optical alignment, and color through the larger illustration's semantic roles,
   but do not distort the source icon's aspect ratio or redraw its silhouette.
 - Give every icon a reserved icon box that does not overlap its label box, container padding, node

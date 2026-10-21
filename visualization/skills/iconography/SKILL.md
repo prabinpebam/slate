@@ -18,6 +18,10 @@ Prefer **Fluent** for Microsoft and Windows subjects. Prefer **Material Symbols*
 next to Slate's own chrome, because the viewer already ships that set self-hosted at
 `shell/vendor/material-symbols-outlined.ttf`.
 
+The Canvas application's own toolbar uses Lucide icons through its bundled `lucide-react`
+dependency. That is a runtime implementation detail covered by the Canvas third-party notices, not
+a fourth authoring source: never use Lucide in authored content.
+
 ## The one-source rule
 
 **Choose exactly one source per SVG, chart, or page component, and use it exclusively.**
@@ -73,7 +77,17 @@ everything. See [`assets/icons/README.md`](../../../assets/icons/README.md).
 
    Record the source path, version, and license in the visual brief or an adjacent comment.
 
-5. **Never substitute a placeholder.** A generic dot, circle, sparkle, initial, or hand-drawn
+5. **Meet the source license.** Every approved source permits reuse, with different duties:
+
+   | Source | License | Duty |
+   | --- | --- | --- |
+   | Fluent System Icons | MIT | Keep the provenance record; the license travels with the repository's notices |
+   | Material Symbols | Apache-2.0 | None beyond provenance; Slate already ships the font with its license |
+   | Font Awesome Free | Icons CC BY 4.0 | Add a **visible attribution** on the page or slide that uses the icons, for example "Icons: Font Awesome Free, CC BY 4.0" linking to <https://fontawesome.com/license/free> |
+
+   Font Awesome Pro icons are not licensed for redistribution in Slate content; never use them.
+
+6. **Never substitute a placeholder.** A generic dot, circle, sparkle, initial, or hand-drawn
    mini-symbol is not acceptable when the library contains a clear icon for the concept. If no
    suitable icon exists, omit the icon or redesign the element.
 
@@ -100,6 +114,7 @@ everything. See [`assets/icons/README.md`](../../../assets/icons/README.md).
 
 - Never use emoji as an icon, anywhere - content, labels, status, tooltips, or navigation.
 - Never mix icon libraries inside one SVG, chart, or component.
+- Never publish Font Awesome icons without the visible CC BY 4.0 attribution.
 - Never redraw, trace, or invent a familiar icon.
 - Never fetch icons from an unapproved remote service at author time or run time; Slate content is
   static, offline-capable, and must not depend on a third-party icon endpoint.

@@ -7,6 +7,7 @@
     { "path": "docs/reader-guide.md", "title": "Reader guide", "group": "Guides", "order": 3, "icon": "menu_book" },
     { "path": "docs/demos.md", "title": "Demo guide", "group": "Guides", "order": 4, "icon": "widgets" },
     { "path": "docs/github-pages.md", "title": "GitHub Pages", "group": "Publishing", "order": 5, "icon": "public" },
-    { "path": "docs/maintaining.md", "title": "Maintaining Slate", "group": "Contributing", "order": 6, "icon": "build" }
+    { "path": "docs/maintaining.md", "title": "Maintaining Slate", "group": "Contributing", "order": 6, "icon": "build" },
+    { "path": "docs/third-party-notices.md", "title": "Third-party notices", "group": "Contributing", "order": 7, "icon": "gavel" }
   ]
 }

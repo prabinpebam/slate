@@ -157,6 +157,7 @@ local preview, content updates, troubleshooting, and deployment from another rep
 | [schema/](schema/) | Manifest, config, Canvas, and motion schemas |
 | [scripts/](scripts/) | Initialization, runtime management, site build, and validation |
 | [examples/](examples/) | Worked before/after conversion |
+| [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) | Licenses of redistributed third-party components |
 
 ## Develop and validate
 
@@ -180,6 +181,7 @@ npm run test:navigation
 npm run test:reader-personas
 npm run test:presentation-motion
 npm run test:canvas-contracts
+npm run test:third-party-notices
 npm run test:chart
 npm run test:svg-illustration
 npm run validate:svg-illustration
@@ -189,3 +191,11 @@ npm run validate:svg-illustration
 synchronizing any host. The Pages build uses the checked-in Canvas output; it does not rebuild or
 modify canonical runtime assets. See [Maintaining Slate](docs/maintaining.md) and
 [AGENTS.md](AGENTS.md) for validation scope and release ordering.
+
+## Third-party notices
+
+Slate's runtime redistributes open-source libraries, an icon font, and a bundled Canvas
+application. Their license texts ship beside them in `shell/vendor/LICENSES/` and
+`shell/canvas/THIRD_PARTY_NOTICES.txt`, and every host receives them through runtime
+synchronization. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and the
+[Third-party notices guide](docs/third-party-notices.md).
