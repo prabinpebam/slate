@@ -64,6 +64,14 @@ The site build requires Node.js 22 or later and uses only built-in Node modules;
 installation is needed**. The Python command is one option for serving static files.
 Keep preview servers bound to loopback. The viewer fetches content, so `file://` does not work.
 
+### Links that leave the documentation
+
+Links to the documentation's own domain stay in the reader's tab. Other domains open in a new tab
+with an accessible "opens in a new tab" label. Hosts can set `parentDomain` in
+`slate.config.json` to also treat that domain and its subdomains as their own, including during
+local preview. See the [reader guide](docs/reader-guide.md#links-that-leave-the-documentation).
+Run `npm run test:navigation` for the link-policy checks.
+
 ## Adopt Slate in your repository
 
 ### 1. Add the complete package

@@ -68,6 +68,11 @@
     "defaultReaderPersona": {
       "type": "string",
       "description": "Configured reader-persona ID selected initially. Defaults to all readers."
+    },
+    "parentDomain": {
+      "type": "string",
+      "description": "The domain the documentation belongs to (for example 'example.github.io'). A link to it or any of its subdomains stays in the reader's tab; a link to anywhere else opens in a new tab and says so to screen readers. Defaults to the domain the docs are served from.",
+      "pattern": "^[A-Za-z0-9.-]+$"
     }
   },
   "additionalProperties": true

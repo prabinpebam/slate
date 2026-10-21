@@ -30,6 +30,14 @@ https://prabinpebam.github.io/slate/#docs/github-pages.md#local-preview
 Copy the URL after navigating to a page or heading. Refreshing a hash route loads the same static
 entry page, so GitHub Pages does not need a custom rewrite rule or a fallback 404 page.
 
+## Links that leave the documentation
+
+Links to the domain serving the documentation stay in the reader's tab.
+Links to other domains open in a new tab and include an accessible "opens in a new tab" label.
+A host can set `parentDomain` in `slate.config.json` to include that domain and its subdomains
+in its own-domain policy. For example, `parentDomain: "example.github.io"` keeps links to the
+published site in the same tab even when reading the documentation locally.
+
 ## Choose a theme
 
 The header theme button switches the reader's theme preference.
