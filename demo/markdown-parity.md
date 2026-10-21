@@ -29,8 +29,8 @@ Ordinary Markdown works unchanged:
 
 ```js
 // Fenced code blocks get syntax highlighting + a copy button
-function greet(name) {
-  return `Hello, ${name}`;
+function packFor(leg) {
+  return `Rope, waybread, and a stout heart for ${leg}`;
 }
 ```
 
@@ -44,9 +44,11 @@ function greet(name) {
 
 ## Task list
 
-- [x] Render Markdown
-- [x] Map callouts
-- [ ] Author your own content
+A packing list for the fictional quest used across this demo:
+
+- [x] Rope (you will want it)
+- [x] Second breakfast
+- [ ] Unmake the Ring
 
 ## Links
 

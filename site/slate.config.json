@@ -8,5 +8,8 @@
     { "id": "author", "label": "Authors" },
     { "id": "reviewer", "label": "Reviewers" }
   ],
-  "defaultReaderPersona": "all"
+  "defaultReaderPersona": "all",
+  "specReferences": [
+    { "prefix": "DEC", "route": "demo/quest-brief.html", "label": "Council decision", "cta": "View Council decision", "summaryColumns": [1, 2] }
+  ]
 }

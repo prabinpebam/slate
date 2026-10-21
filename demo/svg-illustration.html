@@ -59,6 +59,45 @@
   <figcaption>A sanitizer-safe, theme-aware workbench. It animates on viewport entry and exposes replay on SVG hover or focus.</figcaption>
 </figure>
 
+<h2>Worked example: the road to the fire</h2>
+<p>The same pipeline drives the fictional quest used across this demo. Regions appear first, the route
+   draws itself, the stops land in reading order, and the destination arrives last.</p>
+<figure class="slate-figure">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 460" role="img"
+       aria-labelledby="quest-map-title quest-map-desc" data-slate-svg-motion="viewport">
+    <title id="quest-map-title">A fictional route runs from the Shire through Rivendell, Moria, and a golden wood to Mount Doom</title>
+    <desc id="quest-map-desc">Green hills on the left, a mountain chain in the middle, a small wood, and a dark range on the right. One route links four stops and ends at a ring marker on the volcano. Not to scale.</desc>
+    <text x="72" y="64" fill="var(--color-neutral-fg-1)" font-family="var(--font-family-base)" font-size="28" font-weight="700">The road to the fire</text>
+    <text x="72" y="96" fill="var(--color-neutral-fg-3)" font-family="var(--font-family-base)" font-size="18">Fictional route · not to scale</text>
+    <g id="quest-map-regions" data-slate-svg-step="0" data-slate-svg-effect="fade-rise">
+      <path d="M60 362 C90 318 130 318 160 362 C180 330 220 330 244 362 Z" fill="var(--color-status-success-bg)" stroke="var(--color-status-success-stroke)" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M320 300 L360 210 L400 300 Z M380 300 L425 190 L470 300 Z M440 300 L478 220 L516 300 Z" fill="var(--color-neutral-bg-3)" stroke="var(--color-neutral-stroke-1)" stroke-width="3" stroke-linejoin="round"/>
+      <g fill="var(--color-status-warning-bg)" stroke="var(--color-status-warning-stroke)" stroke-width="3">
+        <path d="M570 276 V258 M605 266 V248 M640 276 V258" fill="none" stroke-linecap="round"/>
+        <circle cx="570" cy="244" r="18"/><circle cx="605" cy="234" r="18"/><circle cx="640" cy="244" r="18"/>
+      </g>
+      <path d="M700 330 L760 250 L800 286 L850 160 L880 204 L920 330 Z" fill="var(--color-status-danger-bg)" stroke="var(--color-status-danger-stroke)" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M850 148 C838 132 862 122 850 104" fill="none" stroke="var(--color-status-danger-fg)" stroke-width="5" stroke-linecap="round"/>
+    </g>
+    <path id="quest-map-route" data-slate-svg-step="1" data-slate-svg-effect="draw" d="M150 350 C200 300 240 260 290 250 C340 240 370 270 420 270 C480 270 540 300 600 300 C680 300 760 250 850 196" fill="none" stroke="var(--color-brand-fg-1)" stroke-width="6" stroke-linecap="round"/>
+    <g id="quest-map-stops" data-slate-svg-step="2" data-slate-svg-effect="scale-in" font-family="var(--font-family-base)" font-size="20" font-weight="700" text-anchor="middle">
+      <circle cx="150" cy="350" r="10" fill="var(--color-neutral-bg-1)" stroke="var(--color-brand-fg-1)" stroke-width="5"/>
+      <circle cx="290" cy="250" r="10" fill="var(--color-neutral-bg-1)" stroke="var(--color-brand-fg-1)" stroke-width="5"/>
+      <circle cx="420" cy="270" r="10" fill="var(--color-neutral-bg-1)" stroke="var(--color-brand-fg-1)" stroke-width="5"/>
+      <circle cx="600" cy="300" r="10" fill="var(--color-neutral-bg-1)" stroke="var(--color-brand-fg-1)" stroke-width="5"/>
+      <text x="152" y="404" fill="var(--color-neutral-fg-1)">The Shire</text>
+      <text x="282" y="222" fill="var(--color-neutral-fg-1)">Rivendell</text>
+      <text x="420" y="334" fill="var(--color-neutral-fg-1)">Moria</text>
+      <text x="605" y="204" fill="var(--color-neutral-fg-1)">Golden wood</text>
+    </g>
+    <g id="quest-map-destination" data-slate-svg-step="3" data-slate-svg-effect="scale-in">
+      <circle cx="850" cy="196" r="15" fill="none" stroke="var(--color-status-warning-fg)" stroke-width="7"/>
+      <text x="830" y="372" fill="var(--color-neutral-fg-1)" font-family="var(--font-family-base)" font-size="22" font-weight="700" text-anchor="middle">Mount Doom</text>
+    </g>
+  </svg>
+  <figcaption>A fictional quest map built from semantic groups. With reduced motion, the complete map appears at once.</figcaption>
+</figure>
+
 <h2>Four Slate profiles</h2>
 <div class="slate-card-grid" data-cols="2">
   <article class="slate-card"><h3 class="slate-card__title">Viewport motion</h3><p class="slate-card__body">The default for inline article illustrations: finite entry, replay, and complete reduced-motion state.</p></article>

@@ -31,7 +31,9 @@ Slate documents itself using the same viewer, components, manifests, and runtime
 The [GitHub Pages site](https://prabinpebam.github.io/slate/) combines task-oriented guides with
 working component, Markdown, illustration, and presentation examples. The
 [standalone demo](https://prabinpebam.github.io/slate/demo/) also includes the interactive,
-read-only Canvas and intentional sanitizer test cases.
+read-only Canvas and intentional sanitizer test cases. Every demo example follows one fictional
+storyline, a small company carrying a Ring to Mount Doom, so a single plot runs through the brief,
+slides, illustrations, and Canvas.
 
 | Start here | Purpose |
 | --- | --- |

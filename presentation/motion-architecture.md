@@ -330,7 +330,7 @@ announcement instead.
 The existing body-fragment contract remains authoritative:
 
 ```html
-<div class="slate-deck" data-deck-id="family-2027">
+<div class="slate-deck" data-deck-id="council-briefing">
   <section class="slate-slide" id="credible-value">
     <!-- semantic title, visible content, figures, and talking track -->
   </section>
@@ -358,7 +358,7 @@ Proposed conceptual model:
 ```json
 {
   "version": 1,
-  "deckId": "family-2027",
+  "deckId": "council-briefing",
   "defaultRevisit": "restore",
   "slides": {
     "credible-value": {

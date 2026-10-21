@@ -38,6 +38,13 @@ A host can set `parentDomain` in `slate.config.json` to include that domain and 
 in its own-domain policy. For example, `parentDomain: "example.github.io"` keeps links to the
 published site in the same tab even when reading the documentation locally.
 
+## Preview an ID without leaving the page
+
+When a host declares ID prefixes in `specReferences`, an inline ID such as `DEC-02` becomes a
+button. Hover it, focus it, or select it to read the defining row in a popover, then follow its
+link to the source page. The demo overview shows this with a Council decision from the strategy
+brief.
+
 ## Choose a theme
 
 The header theme button switches the reader's theme preference.

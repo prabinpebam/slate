@@ -1,44 +1,47 @@
-# Snipping Tool - Click to Do Bet (raw notes)
+# Operation Mount Doom - Quest Plan (raw notes)
 
 These are raw, unstructured notes handed to the agent. The agent converts them into a structured,
 navigable page (see `after.html`). Nothing here is invented; the generated page must trace to it.
 
+This is a fictional, affectionate homage used as a demo. It is not affiliated with any rights
+holder, and every number is made up.
+
 ## Summary
 
-The big bet for FY27 is integrating Snipping Tool with Click to Do so a capture becomes an actionable
-surface, not just an image. Goal: turn "screenshot" into "get something done."
+The Council's plan is to carry the Ring on foot, by back roads, to the fire where it was made and
+unmake it there. Goal: end the danger for good instead of hiding it for another age.
 
 ## Why now
 
-- Users already screenshot to act on content (copy text, look things up, share).
-- Click to Do provides on-device intelligence to recognize text and entities.
-- Combining them removes the manual copy/paste/switch-app loop.
+- The Enemy is searching for the Ring and its riders are already abroad.
+- Hiding it again only delays the danger, and using it corrupts whoever holds it.
+- A small company can slip through where an army would be seen.
 
 ## Goals
 
-1. Recognize text and entities in any capture.
-2. Offer contextual actions (copy text, search, translate, open link).
-3. Keep it fast and private - on-device where possible.
+1. Reach Mount Doom without being seen.
+2. Keep the Ring-bearer fed, sheltered, and moving.
+3. Unmake the Ring in the fire where it was made.
 
-## Metrics we care about
+## Numbers we care about
 
-- Monthly active devices: 382M.
-- Quarter-over-quarter usage growth: +12%.
-- Average store rating: 4.6.
+- Company size: 9 walkers.
+- Pace since Rivendell: +12% leagues per day.
+- Rating of the inn at Bree: 4.6.
 
 ## Phases
 
-- FY26 Q3: discovery and research.
-- FY26 Q4: prototype recognition + actions.
-- FY27 Q1: ship first actions to Insiders.
+- Autumn: the Council meets at Rivendell.
+- Winter: cross the mountains and pass through Moria.
+- Spring: the last march to the mountain.
 
 ## Risks
 
-- Recognition accuracy on noisy captures.
-- Privacy expectations for on-device processing.
-- Discoverability of the new actions.
+- Being seen by the Enemy on open ground.
+- Supplies running short after the mines.
+- The Ring's pull on whoever carries it.
 
-## Old vs new flow
+## Old vs new plan
 
-Today: capture -> save/paste -> switch app -> act.
-With the bet: capture -> actions appear inline -> act.
+Strength first: march an army -> fight at the gate -> be seen long before arriving.
+Stealth first: send a small company -> take the back road -> reach the fire unseen.

@@ -2,39 +2,64 @@
   "$schema": "https://slate.dev/schema/canvas-record-set.schema.json",
   "schemaVersion": 1,
   "id": "demo-structured-records",
-  "revision": "demo-1",
+  "revision": "quest-1",
   "records": [
     {
       "id": "DEMO-RECORD-01",
       "kind": "decision",
-      "title": "Define the source authority before choosing a representation",
-      "eyebrow": "Foundation",
+      "title": "Unmake the Ring rather than hide it or use it",
+      "summary": "Hiding only delays the danger and using it corrupts the user. Fictional demo record.",
+      "eyebrow": "Council",
       "source": {
-        "label": "Slate overview",
-        "href": "landing.html"
+        "label": "Operation Mount Doom",
+        "href": "quest-brief.html"
       },
       "metadata": [
-        { "label": "Owner", "value": "Documentation host" }
+        { "label": "Owner", "value": "The Council" }
       ]
     },
     {
       "id": "DEMO-RECORD-02",
       "kind": "requirement",
-      "title": "Keep host meaning separate from reusable package behavior",
-      "eyebrow": "Boundary",
+      "title": "Keep the Ring-bearer unseen from the Shire to the fire",
+      "summary": "Placed twice: it is both a Council non-negotiable and a constraint checked on the road.",
+      "eyebrow": "Constraint",
       "source": {
-        "label": "Slate overview",
-        "href": "landing.html"
+        "label": "Operation Mount Doom",
+        "href": "quest-brief.html"
       }
     },
     {
       "id": "DEMO-RECORD-03",
       "kind": "evidence",
-      "title": "Validate the real rendered host after package checks pass",
-      "eyebrow": "Assurance",
+      "title": "The Enemy watches the main gate, not the back road",
+      "eyebrow": "Scouting",
       "source": {
-        "label": "Slate overview",
-        "href": "landing.html"
+        "label": "Operation Mount Doom",
+        "href": "quest-brief.html"
+      }
+    },
+    {
+      "id": "DEMO-RECORD-04",
+      "kind": "decision",
+      "title": "Travel on foot with a small company",
+      "eyebrow": "Council",
+      "source": {
+        "label": "Operation Mount Doom",
+        "href": "quest-brief.html"
+      },
+      "metadata": [
+        { "label": "Company size", "value": "9 walkers" }
+      ]
+    },
+    {
+      "id": "DEMO-RECORD-05",
+      "kind": "evidence",
+      "title": "Supplies run short after the mines",
+      "eyebrow": "Supply",
+      "source": {
+        "label": "Council briefing deck",
+        "href": "generated-motion.html"
       }
     }
   ]

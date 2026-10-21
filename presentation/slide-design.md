@@ -37,7 +37,7 @@ track; **this** skill owns how each slide **looks and composes across the full w
   set), `<= ~40` visible words of prose in the body. If it needs a paragraph to be understood,
   that paragraph belongs in the talking track.
 - **Key points vs. enumerated items.** The three-point budget limits competing *claims*, not
-  *facts*. One key point may enumerate a complete set - "five value pillars," "eight planets,"
+  *facts*. One key point may enumerate a complete set - "five strengths," "eight planets,"
   "a four-step flow" - shown as a full tile set. Never truncate a factual set to hit three, and
   never split one idea into three rival headlines. When the set *is* the point, show all of it
   as one dominant tile block.
@@ -133,8 +133,8 @@ A slide title is either one part or two - style it to match:
 
   ```html
   <h2 class="slate-slide__title slate-slide__title--split">
-    <span class="slate-slide__title-a">Universal Capture:</span>
-    <span class="slate-slide__title-b">one familiar capture, everywhere it's needed</span>
+    <span class="slate-slide__title-a">Stealth over strength:</span>
+    <span class="slate-slide__title-b">a small company goes where an army would be seen</span>
   </h2>
   ```
 

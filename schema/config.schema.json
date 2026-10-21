@@ -73,6 +73,52 @@
       "type": "string",
       "description": "The domain the documentation belongs to (for example 'example.github.io'). A link to it or any of its subdomains stays in the reader's tab; a link to anywhere else opens in a new tab and says so to screen readers. Defaults to the domain the docs are served from.",
       "pattern": "^[A-Za-z0-9.-]+$"
+    },
+    "specReferences": {
+      "type": "array",
+      "description": "Optional ID references. An inline code span such as `DEC-01` whose prefix is declared here becomes a preview button that quotes the matching table row or heading on the declared source page. Nothing is enabled by default.",
+      "items": {
+        "type": "object",
+        "required": ["prefix", "route"],
+        "properties": {
+          "prefix": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9]*$",
+            "description": "Uppercase ID prefix. IDs take the form PREFIX-SEGMENT[-SEGMENT...]."
+          },
+          "route": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Manifest path of the page that defines these IDs in a table's first column or in an h2-h4 heading."
+          },
+          "label": {
+            "type": "string",
+            "description": "Human label for the ID kind, shown in the preview source line. Defaults to the prefix."
+          },
+          "cta": {
+            "type": "string",
+            "description": "Preview action text. Defaults to 'View <label>'."
+          },
+          "summaryColumns": {
+            "type": "array",
+            "items": { "type": "integer", "minimum": 0 },
+            "description": "Zero-based table cells joined into the preview summary for row targets. Defaults to [1]."
+          },
+          "summaryField": {
+            "type": "string",
+            "description": "For heading targets, the first-column label of the row in the following table whose last cell is the summary."
+          },
+          "viewRoutePrefix": {
+            "type": "string",
+            "description": "Optional route prefix of detail pages. A page under it that declares the ID in a table row labelled viewIdField previews its TL;DR and links there instead."
+          },
+          "viewIdField": {
+            "type": "string",
+            "description": "First-column label that declares an ID on a detail page under viewRoutePrefix."
+          }
+        },
+        "additionalProperties": false
+      }
     }
   },
   "additionalProperties": true

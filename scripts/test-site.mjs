@@ -231,6 +231,13 @@ export async function testSiteBrowser(browser, { url, screenshots } = {}) {
 
     await page.goto(`${url}#demo/components.html`);
     await page.locator(".slate-card").first().waitFor();
+    await page.goto(`${url}#demo/landing.html`);
+    const specRef = page.locator(".slate-spec-ref", { hasText: "DEC-02" }).first();
+    await specRef.waitFor();
+    await specRef.focus();
+    await page.locator("#slate-xref-pop:not([hidden])").waitFor();
+    assert.match(await page.locator("#slate-xref-pop").innerText(), /Send a small company on foot/);
+    await specRef.blur();
     await page.goto(`${url}#demo/presentation-motion.html`);
     await page.locator(".slate-slide").first().waitFor();
     await page.goto(`${url}#docs/demos.md`);
@@ -244,7 +251,7 @@ export async function testSiteBrowser(browser, { url, screenshots } = {}) {
     assert.ok(await canvasPage.locator('a[href$="index.html#landing.html"]').count() > 0, "Canvas source link stays in the demo host");
     assert.deepEqual(errors, [], "No browser runtime errors");
     assert.deepEqual(missing, [], "No missing reader resources");
-    console.log("Slate site browser checks passed: guide routes, search, deep-link reload, reader isolation, desktop/mobile themes, keyboard navigation, gallery, presentation, and Canvas.");
+    console.log("Slate site browser checks passed: guide routes, search, deep-link reload, reader isolation, desktop/mobile themes, keyboard navigation, gallery, ID reference preview, presentation, and Canvas.");
   } finally {
     if (canvasPage) await canvasPage.close();
     await page.close();

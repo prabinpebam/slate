@@ -84,7 +84,7 @@ export async function testReaderPersonasBrowser(browser, { url, screenshots }) {
     assert.equal(await secondary.locator(":scope > .doc-section-body").isVisible(), false, "Secondary content starts collapsed");
     assert.equal(await secondary.locator(".collapse-toggle").getAttribute("aria-label"), "Expand section");
     assert.equal(await page.locator('.toc a[href$="#metrics"]').count(), 1, "Secondary content remains in the TOC");
-    await page.locator(".search-input").fill("Monthly active");
+    await page.locator(".search-input").fill("Leagues walked");
     await page.locator(".search-results.visible").waitFor();
     assert.equal(await page.locator(".search-results .search-result-title").filter({ hasText: "Component gallery" }).count(), 1, "Collapsed content remains searchable");
     await page.locator(".search-input").fill("");

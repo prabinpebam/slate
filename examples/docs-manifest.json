@@ -1,7 +1,7 @@
 {
   "version": 2,
   "config": {
-    "projectName": "Snipping Tool Docs",
+    "projectName": "Quest Docs",
     "brandColor": "#0F6CBD",
     "defaultTheme": "auto",
     "landing": "after.html"
@@ -9,16 +9,16 @@
   "entries": [
     {
       "path": "after.html",
-      "title": "Snipping Tool - the Click to Do Bet",
+      "title": "Operation Mount Doom - Quest Plan",
       "order": 0,
       "group": "Strategy",
-      "icon": "flag",
+      "icon": "landscape",
       "badge": "new",
       "type": "page"
     },
     {
       "path": "before.md",
-      "title": "Click to Do Bet (raw notes)",
+      "title": "Quest plan (raw notes)",
       "order": 1,
       "group": "Source",
       "hidden": true,

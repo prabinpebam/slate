@@ -132,7 +132,7 @@ try {
   assert.match(demo, /data-slate-svg-motion="viewport"/);
   assert.match(demo, /data-slate-svg-effect="draw"/);
 
-  for (const pageName of ["click-to-do.html", "svg-illustration.html", "generated-motion.html", "presentation-motion.html"]) {
+  for (const pageName of ["quest-brief.html", "svg-illustration.html", "generated-motion.html", "presentation-motion.html"]) {
     const source = fs.readFileSync(path.join(slateRoot, "demo", pageName), "utf8");
     const svgs = descendants(parseFragment(source), "svg");
     assert.ok(svgs.length > 0, `${pageName} must exercise SVG illustration`);

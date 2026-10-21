@@ -1,112 +1,112 @@
 {
   "version": 1,
-  "deckId": "generated-motion-proof",
+  "deckId": "council-briefing",
   "authoringMode": "generated",
   "stage": { "width": 1600, "height": 900 },
   "defaultRevisit": "restore",
   "slides": {
-    "journey-not-dashboard": {
-      "claim": "Care is a journey through changing family moments, not a static dashboard.",
+    "road-not-map": {
+      "claim": "The quest is a journey through changing places, not a static pin on a map.",
       "blueprint": "journey-handoff",
-      "visualMechanism": "A curved route with persistent milestones and one marker traveling to growth.",
-      "reducedMotion": "Show the complete route, all milestones, and the marker at growth immediately.",
+      "visualMechanism": "A curved road with persistent stops and one marker traveling to the fire.",
+      "reducedMotion": "Show the complete road, all stops, and the marker at Mount Doom immediately.",
       "durationMs": 1200,
       "fragments": [
         { "id": "route", "atMs": 450 },
-        { "id": "care-moments", "atMs": 1150 },
-        { "id": "growth", "atMs": 1950 }
+        { "id": "waypoints", "atMs": 1150 },
+        { "id": "fire", "atMs": 1950 }
       ],
       "targets": [
-        { "id": "care-route", "recipe": "draw-stroke", "fragmentId": "route", "startMs": 0, "durationMs": 600 },
-        { "id": "setup-node", "recipe": "shape-pop", "fragmentId": "route", "startMs": 140, "durationMs": 400 },
-        { "id": "guidance-node", "recipe": "shape-pop", "fragmentId": "care-moments", "revealOffsetMs": 0, "durationMs": 420 },
-        { "id": "recovery-node", "recipe": "spin-settle", "fragmentId": "care-moments", "revealOffsetMs": 140, "durationMs": 480 },
-        { "id": "growth-node", "recipe": "shape-pop", "fragmentId": "growth", "revealOffsetMs": 0, "durationMs": 450 },
-        { "id": "journey-marker", "recipe": "path-travel", "pathId": "care-route", "fragmentId": "growth", "revealOffsetMs": 100, "durationMs": 950 }
+        { "id": "quest-route", "recipe": "draw-stroke", "fragmentId": "route", "startMs": 0, "durationMs": 600 },
+        { "id": "shire-node", "recipe": "shape-pop", "fragmentId": "route", "startMs": 140, "durationMs": 400 },
+        { "id": "rivendell-node", "recipe": "shape-pop", "fragmentId": "waypoints", "revealOffsetMs": 0, "durationMs": 420 },
+        { "id": "moria-node", "recipe": "spin-settle", "fragmentId": "waypoints", "revealOffsetMs": 140, "durationMs": 480 },
+        { "id": "doom-node", "recipe": "shape-pop", "fragmentId": "fire", "revealOffsetMs": 0, "durationMs": 450 },
+        { "id": "bearer-marker", "recipe": "path-travel", "pathId": "quest-route", "fragmentId": "fire", "revealOffsetMs": 100, "durationMs": 950 }
       ],
       "fallback": "end"
     },
-    "value-in-overlap": {
-      "claim": "Family value exists only where real needs and credible support overlap.",
+    "plan-in-overlap": {
+      "claim": "A plan works only where the quest's needs and the company's strengths overlap.",
       "blueprint": "relationship-reveal",
-      "visualMechanism": "Two persistent need/support regions reveal a shared intersection lens.",
-      "reducedMotion": "Show both rings, the overlap lens, and the Value for Family label immediately.",
+      "visualMechanism": "Two persistent needs/strengths regions reveal a shared intersection lens.",
+      "reducedMotion": "Show both regions, the overlap lens, and the plan label immediately.",
       "durationMs": 900,
       "fragments": [
         { "id": "needs", "atMs": 520 },
-        { "id": "support", "atMs": 980 },
-        { "id": "value", "atMs": 1580 }
+        { "id": "strengths", "atMs": 980 },
+        { "id": "plan", "atMs": 1580 }
       ],
       "targets": [
         { "id": "needs-ring", "recipe": "shape-pop", "fragmentId": "needs", "startMs": 0, "durationMs": 450 },
-        { "id": "support-ring", "recipe": "shape-pop", "fragmentId": "support", "revealOffsetMs": 0, "durationMs": 450 },
-        { "id": "overlap-lens", "recipe": "wipe-reveal", "fragmentId": "value", "revealOffsetMs": 0, "durationMs": 520 },
-        { "id": "value-label", "recipe": "fade-rise", "fragmentId": "value", "revealOffsetMs": 140, "durationMs": 360 }
+        { "id": "strengths-ring", "recipe": "shape-pop", "fragmentId": "strengths", "revealOffsetMs": 0, "durationMs": 450 },
+        { "id": "overlap-lens", "recipe": "wipe-reveal", "fragmentId": "plan", "revealOffsetMs": 0, "durationMs": 520 },
+        { "id": "plan-label", "recipe": "fade-rise", "fragmentId": "plan", "revealOffsetMs": 140, "durationMs": 360 }
       ],
       "fallback": "end"
     },
-    "reliability-changes-choice": {
-      "claim": "The retained family choice shrinks as essential reliability breaks.",
+    "every-pass-narrows": {
+      "claim": "Supplies shrink at every leg of the road, so the hardest leg sets the margin.",
       "blueprint": "quantity-build",
-      "visualMechanism": "Three bars share one baseline and decrease from promise to retained trust.",
-      "reducedMotion": "Show all bars at final values with the credibility-gap label visible.",
+      "visualMechanism": "Three bars share one baseline and decrease from full packs to last rations.",
+      "reducedMotion": "Show all bars at final values with the margin label visible.",
       "durationMs": 900,
       "fragments": [
-        { "id": "promise", "atMs": 720 },
-        { "id": "setup", "atMs": 1240 },
-        { "id": "trust", "atMs": 1780 }
+        { "id": "packs", "atMs": 720 },
+        { "id": "moria", "atMs": 1240 },
+        { "id": "rations", "atMs": 1780 }
       ],
       "targets": [
-        { "id": "choice-baseline", "recipe": "line-grow", "fragmentId": "promise", "startMs": 0, "durationMs": 420 },
-        { "id": "promise-bar", "recipe": "bar-grow", "fragmentId": "promise", "startMs": 100, "durationMs": 500 },
-        { "id": "setup-bar", "recipe": "bar-grow", "fragmentId": "setup", "revealOffsetMs": 0, "durationMs": 500 },
-        { "id": "trust-bar", "recipe": "bar-grow", "fragmentId": "trust", "revealOffsetMs": 0, "durationMs": 500 },
-        { "id": "trust-callout", "recipe": "wipe-reveal", "fragmentId": "trust", "revealOffsetMs": 120, "durationMs": 400 }
+        { "id": "supply-baseline", "recipe": "line-grow", "fragmentId": "packs", "startMs": 0, "durationMs": 420 },
+        { "id": "packs-bar", "recipe": "bar-grow", "fragmentId": "packs", "startMs": 100, "durationMs": 500 },
+        { "id": "moria-bar", "recipe": "bar-grow", "fragmentId": "moria", "revealOffsetMs": 0, "durationMs": 500 },
+        { "id": "rations-bar", "recipe": "bar-grow", "fragmentId": "rations", "revealOffsetMs": 0, "durationMs": 500 },
+        { "id": "margin-callout", "recipe": "wipe-reveal", "fragmentId": "rations", "revealOffsetMs": 120, "durationMs": 400 }
       ],
       "fallback": "end"
     },
-    "system-around-family": {
-      "claim": "A family hub makes five existing value pillars work as one coherent system.",
+    "company-as-system": {
+      "claim": "The company makes five separate strengths work as one coherent system.",
       "blueprint": "system-assembly",
-      "visualMechanism": "A central family hub assembles five nodes and their persistent connectors.",
+      "visualMechanism": "A central company hub assembles five strength nodes and their persistent connectors.",
       "reducedMotion": "Show the complete hub, nodes, connectors, and labels immediately.",
       "durationMs": 1000,
       "fragments": [
         { "id": "core", "atMs": 620 },
-        { "id": "pillars", "atMs": 1580 },
+        { "id": "strengths", "atMs": 1580 },
         { "id": "connections", "atMs": 2200 }
       ],
       "targets": [
-        { "id": "family-hub", "recipe": "shape-pop", "fragmentId": "core", "startMs": 0, "durationMs": 450 },
-        { "id": "link-safety", "recipe": "draw-stroke", "fragmentId": "connections", "revealOffsetMs": 0, "durationMs": 450 },
-        { "id": "safety-node", "recipe": "shape-pop", "fragmentId": "pillars", "revealOffsetMs": 0, "durationMs": 400 },
-        { "id": "link-work", "recipe": "draw-stroke", "fragmentId": "connections", "revealOffsetMs": 50, "durationMs": 450 },
-        { "id": "work-node", "recipe": "shape-pop", "fragmentId": "pillars", "revealOffsetMs": 50, "durationMs": 400 },
-        { "id": "link-storage", "recipe": "draw-stroke", "fragmentId": "connections", "revealOffsetMs": 100, "durationMs": 450 },
-        { "id": "storage-node", "recipe": "shape-pop", "fragmentId": "pillars", "revealOffsetMs": 100, "durationMs": 400 },
-        { "id": "link-play", "recipe": "draw-stroke", "fragmentId": "connections", "revealOffsetMs": 150, "durationMs": 450 },
-        { "id": "play-node", "recipe": "shape-pop", "fragmentId": "pillars", "revealOffsetMs": 150, "durationMs": 400 },
-        { "id": "link-memory", "recipe": "draw-stroke", "fragmentId": "connections", "revealOffsetMs": 200, "durationMs": 450 },
-        { "id": "memory-node", "recipe": "shape-pop", "fragmentId": "pillars", "revealOffsetMs": 200, "durationMs": 400 }
+        { "id": "company-hub", "recipe": "shape-pop", "fragmentId": "core", "startMs": 0, "durationMs": 450 },
+        { "id": "link-guard", "recipe": "draw-stroke", "fragmentId": "connections", "revealOffsetMs": 0, "durationMs": 450 },
+        { "id": "guard-node", "recipe": "shape-pop", "fragmentId": "strengths", "revealOffsetMs": 0, "durationMs": 400 },
+        { "id": "link-lore", "recipe": "draw-stroke", "fragmentId": "connections", "revealOffsetMs": 50, "durationMs": 450 },
+        { "id": "lore-node", "recipe": "shape-pop", "fragmentId": "strengths", "revealOffsetMs": 50, "durationMs": 400 },
+        { "id": "link-provisions", "recipe": "draw-stroke", "fragmentId": "connections", "revealOffsetMs": 100, "durationMs": 450 },
+        { "id": "provisions-node", "recipe": "shape-pop", "fragmentId": "strengths", "revealOffsetMs": 100, "durationMs": 400 },
+        { "id": "link-path", "recipe": "draw-stroke", "fragmentId": "connections", "revealOffsetMs": 150, "durationMs": 450 },
+        { "id": "path-node", "recipe": "shape-pop", "fragmentId": "strengths", "revealOffsetMs": 150, "durationMs": 400 },
+        { "id": "link-hope", "recipe": "draw-stroke", "fragmentId": "connections", "revealOffsetMs": 200, "durationMs": 450 },
+        { "id": "hope-node", "recipe": "shape-pop", "fragmentId": "strengths", "revealOffsetMs": 200, "durationMs": 400 }
       ],
       "fallback": "end"
     },
-    "sequence-the-investment": {
-      "claim": "The investment sequence is trust first, value second, and reach third.",
+    "sequence-the-march": {
+      "claim": "The march sequence is stay unseen first, reach the mountain second, and unmake the Ring third.",
       "blueprint": "decision-shift",
       "visualMechanism": "An ascending three-step decision path makes order and dependency visible.",
       "reducedMotion": "Show the complete ascending path and all three labeled steps immediately.",
       "durationMs": 900,
       "fragments": [
-        { "id": "trust", "atMs": 640 },
-        { "id": "value", "atMs": 1120 },
-        { "id": "reach", "atMs": 1680 }
+        { "id": "unseen", "atMs": 640 },
+        { "id": "mountain", "atMs": 1120 },
+        { "id": "unmake", "atMs": 1680 }
       ],
       "targets": [
-        { "id": "decision-line", "recipe": "draw-stroke", "fragmentId": "trust", "startMs": 0, "durationMs": 500 },
-        { "id": "trust-step", "recipe": "shape-pop", "fragmentId": "trust", "startMs": 120, "durationMs": 400 },
-        { "id": "value-step", "recipe": "shape-pop", "fragmentId": "value", "revealOffsetMs": 0, "durationMs": 420 },
-        { "id": "reach-step", "recipe": "shape-pop", "fragmentId": "reach", "revealOffsetMs": 0, "durationMs": 420 }
+        { "id": "decision-line", "recipe": "draw-stroke", "fragmentId": "unseen", "startMs": 0, "durationMs": 500 },
+        { "id": "unseen-step", "recipe": "shape-pop", "fragmentId": "unseen", "startMs": 120, "durationMs": 400 },
+        { "id": "mountain-step", "recipe": "shape-pop", "fragmentId": "mountain", "revealOffsetMs": 0, "durationMs": 420 },
+        { "id": "unmake-step", "recipe": "shape-pop", "fragmentId": "unmake", "revealOffsetMs": 0, "durationMs": 420 }
       ],
       "fallback": "end"
     }

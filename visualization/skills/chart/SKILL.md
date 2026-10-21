@@ -84,7 +84,7 @@ Required:
 
 - `chart` - a supported chart name.
 - `title` - the accessible chart title.
-- `alt` - states the **takeaway**, not the chart type. "Setups doubled after the Windows release",
+- `alt` - states the **takeaway**, not the chart type. "Sign-ups doubled after the spring release",
   not "a bar chart of setups". The renderer rejects a spec without it.
 - `props` - the component props, including `data` and its accessors.
 
@@ -121,7 +121,7 @@ collapsible table - this satisfies accessibility and makes the numbers searchabl
 ```html
 <figure class="slate-figure">
   <!-- contents of monthly-revenue.svg -->
-  <figcaption>Revenue by month, FY26 (finance close, excludes deferred).</figcaption>
+  <figcaption>Revenue by month, 2026 (finance close, excludes deferred).</figcaption>
 </figure>
 <details class="slate-figure-data">
   <summary>Data</summary>

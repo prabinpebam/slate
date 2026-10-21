@@ -2,8 +2,8 @@
   "$schema": "https://slate.dev/schema/canvas-document.schema.json",
   "schemaVersion": 1,
   "id": "demo-structured-information",
-  "title": "Structured Information Demo",
-  "description": "A project-agnostic proof of nested groups and repeated record placements.",
+  "title": "Quest record map",
+  "description": "A fictional quest showing nested groups, two perspectives, and one record placed twice.",
   "kind": "record-map",
   "mode": "readonly",
   "source": {
@@ -22,52 +22,34 @@
       "id": "by-stage",
       "title": "By stage",
       "groups": [
-    {
-      "id": "group-authoring",
-      "title": "Authoring",
-      "description": "Source and representation decisions",
-      "tone": "aqua",
-      "order": 1
-    },
-    {
-      "id": "group-boundaries",
-      "title": "Boundaries",
-      "parentId": "group-authoring",
-      "order": 1
-    },
-    {
-      "id": "group-validation",
-      "title": "Validation",
-      "description": "Package and host evidence",
-      "tone": "green",
-      "order": 2
-    }
+        {
+          "id": "group-council",
+          "title": "The Council",
+          "description": "Decisions made before the company leaves",
+          "tone": "aqua",
+          "order": 1
+        },
+        {
+          "id": "group-non-negotiables",
+          "title": "Non-negotiables",
+          "parentId": "group-council",
+          "order": 1
+        },
+        {
+          "id": "group-road",
+          "title": "On the road",
+          "description": "Constraints and evidence checked while walking",
+          "tone": "green",
+          "order": 2
+        }
       ],
       "placements": [
-    {
-      "id": "placement-authority-authoring",
-      "groupId": "group-authoring",
-      "recordRef": { "sourceId": "demo-structured-records", "recordId": "DEMO-RECORD-01" },
-      "order": 1
-    },
-    {
-      "id": "placement-boundary-authoring",
-      "groupId": "group-boundaries",
-      "recordRef": { "sourceId": "demo-structured-records", "recordId": "DEMO-RECORD-02" },
-      "order": 1
-    },
-    {
-      "id": "placement-boundary-validation",
-      "groupId": "group-validation",
-      "recordRef": { "sourceId": "demo-structured-records", "recordId": "DEMO-RECORD-02" },
-      "order": 1
-    },
-    {
-      "id": "placement-evidence-validation",
-      "groupId": "group-validation",
-      "recordRef": { "sourceId": "demo-structured-records", "recordId": "DEMO-RECORD-03" },
-      "order": 2
-    }
+        { "id": "placement-unmake-council", "groupId": "group-council", "recordRef": { "sourceId": "demo-structured-records", "recordId": "DEMO-RECORD-01" }, "order": 1 },
+        { "id": "placement-on-foot-council", "groupId": "group-council", "recordRef": { "sourceId": "demo-structured-records", "recordId": "DEMO-RECORD-04" }, "order": 2 },
+        { "id": "placement-unseen-council", "groupId": "group-non-negotiables", "recordRef": { "sourceId": "demo-structured-records", "recordId": "DEMO-RECORD-02" }, "order": 1 },
+        { "id": "placement-unseen-road", "groupId": "group-road", "recordRef": { "sourceId": "demo-structured-records", "recordId": "DEMO-RECORD-02" }, "order": 1 },
+        { "id": "placement-gate-road", "groupId": "group-road", "recordRef": { "sourceId": "demo-structured-records", "recordId": "DEMO-RECORD-03" }, "order": 2 },
+        { "id": "placement-supply-road", "groupId": "group-road", "recordRef": { "sourceId": "demo-structured-records", "recordId": "DEMO-RECORD-05" }, "order": 3 }
       ],
       "presentation": {
         "groupColumns": 2,
@@ -85,8 +67,10 @@
       ],
       "placements": [
         { "id": "kind-placement-01", "groupId": "kind-decision", "recordRef": { "sourceId": "demo-structured-records", "recordId": "DEMO-RECORD-01" }, "order": 1 },
+        { "id": "kind-placement-04", "groupId": "kind-decision", "recordRef": { "sourceId": "demo-structured-records", "recordId": "DEMO-RECORD-04" }, "order": 2 },
         { "id": "kind-placement-02", "groupId": "kind-requirement", "recordRef": { "sourceId": "demo-structured-records", "recordId": "DEMO-RECORD-02" }, "order": 1 },
-        { "id": "kind-placement-03", "groupId": "kind-evidence", "recordRef": { "sourceId": "demo-structured-records", "recordId": "DEMO-RECORD-03" }, "order": 1 }
+        { "id": "kind-placement-03", "groupId": "kind-evidence", "recordRef": { "sourceId": "demo-structured-records", "recordId": "DEMO-RECORD-03" }, "order": 1 },
+        { "id": "kind-placement-05", "groupId": "kind-evidence", "recordRef": { "sourceId": "demo-structured-records", "recordId": "DEMO-RECORD-05" }, "order": 2 }
       ]
     }
   ]

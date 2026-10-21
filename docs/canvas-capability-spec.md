@@ -101,7 +101,7 @@ introduce another trusted adapter without migrating every host's meaning.
 | Host brand-token overrides | Host theme stylesheet |
 | Browser-level acceptance for an adopted Canvas | Host repository |
 
-The package must remain copyable as one `slate/` directory. No Microsoft Family name, Product ID
+The package must remain copyable as one `slate/` directory. No host-specific product name, ID
 prefix, route, wording, or grouping rule may appear in generic Canvas runtime code or templates.
 
 ## 5. Fixed Package Scaffold
@@ -542,27 +542,29 @@ Every adopting Slate repository follows the package skill:
     minimap, and full-screen flows.
 11. Verify ordinary reader pages did not request Canvas assets.
 
-## 17. Current User-Can Adapter
+## 17. Example Host Adapter
 
-The Microsoft Family current-offering example is a host adapter, not generic Slate behavior.
+A host that projects its own catalog onto a Canvas does so through a host adapter, not generic
+Slate behavior. A typical generator:
 
-Its generator:
+- reads an existing, reviewed host model of records;
+- emits every in-scope record into one Record Set, preserving the host's stable IDs;
+- creates top-level groups from an explicit field such as `domain`;
+- creates nested groups from another explicit field such as `scope`;
+- places every record in its declared group;
+- preserves actor, scenario, authority, and source metadata;
+- links every node to the host page that owns the record; and
+- registers the Canvas beside that page in the host manifest.
 
-- reads the existing current-offering `userCapabilities` model;
-- emits all 93 `CUR-UC-*` records into one Record Set;
-- creates top-level groups from explicit `domain` values;
-- creates nested groups from exact `scope` values;
-- places every record in its domain/scope group;
-- preserves actor, scenario, promise, authority, and source metadata;
-- links every node to the generated Current User-Can Catalog; and
-- registers the Canvas beside that catalog in the Product host manifest.
+A first generated Canvas may contain one placement per record. The generic contract permits the
+same record to be placed in multiple groups when a reviewed host mapping explicitly declares those
+additional relationships.
 
-This first generated Canvas contains one placement per current record. The generic contract permits
-the same record to be placed in multiple page/view groups when a future reviewed Product mapping
-explicitly declares those additional relationships.
+The grouping is a projection of existing records. It does not create new requirements, approve a
+design, define a UI layout, or claim adoption by any product.
 
-The grouping is an observed current-offering projection. It does not create future Product
-requirements, Design support, Figma layout, app composition, or Actual Product adoption.
+The bundled demo (`demo/structured-information.canvas.json`) shows the same shape with fictional
+quest records, including one record placed twice.
 
 ## 18. Validation Strategy
 
@@ -638,9 +640,9 @@ V1 is accepted only when:
 12. Canvas runtime is built, synchronized, content-addressed, and drift checked.
 13. Normal Slate reader pages request no Canvas bundle.
 14. Generic contract, runtime, portability, and real-host browser checks pass.
-15. The current User-Can example includes the complete generated source ID set.
-16. No Canvas artifact is presented as Product approval, Design support, Figma design, or app
-    adoption.
+15. A generated host example includes the complete source ID set it claims to project.
+16. No Canvas artifact is presented as requirement approval, design approval, UI layout, or
+    product adoption.
 
 ## 20. Risks And Mitigations
 
@@ -679,7 +681,7 @@ and implemented in the generic Slate package.
 ## 22. Remaining Delivery Work
 
 1. Keep package schemas, domain tests, fixed scaffold, build, skill, and templates synchronized.
-2. Finish Product host runtime synchronization and generator validation.
+2. Finish adopting host runtime synchronization and generator validation.
 3. Add generic browser automation for the fixed Canvas fixture.
 4. Run real-host desktop and narrow light/dark inspection with pixel checks.
 5. Verify reader network isolation from Canvas assets.

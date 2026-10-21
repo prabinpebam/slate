@@ -32,9 +32,12 @@
   </article>
 </div>
 
-Additional fixtures include a [worked narrative](../demo/click-to-do.html), a
-[generated motion example](../demo/generated-motion.html), and the
+Additional fixtures include a worked strategy brief,
+[Operation Mount Doom](../demo/quest-brief.html), the generated
+[Council briefing deck](../demo/generated-motion.html), and the
 [demo overview](../demo/landing.html).
+The demo content follows one fictional storyline: a small company carrying a Ring to Mount Doom. It
+is an affectionate homage, not affiliated with any rights holder, and every number in it is made up.
 These are illustrative fixtures, not statements of a consuming project's policy or product truth.
 
 ## Open the standalone demo

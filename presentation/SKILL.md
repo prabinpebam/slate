@@ -179,7 +179,7 @@ The talk track is a **script**, written for the presenter to say aloud:
 
 - **<= 3 key points** per slide - where a *key point* is a distinct claim the audience must
   retain, **not** an item in an enumerated set. One key point may present a complete set of
-  facts: "Microsoft already offers five value pillars" is *one* point carried by five tiles;
+  facts: "the company carries five strengths" is *one* point carried by five tiles;
   "the Solar System has eight planets" is one point, and showing only three to "hit the budget"
   would be absurd. When the set itself is the fact, enumerate all of it.
 - **<= ~40 words** of visible *prose* (lead + supporting sentences), excluding the talk track.

@@ -91,6 +91,7 @@
     if (state.config.displayFont) document.documentElement.style.setProperty('--font-family-display', state.config.displayFont);
     if (state.config.density) document.documentElement.setAttribute('data-density', state.config.density);
     configureReaderPersonas(state.config.readerPersonas, state.config.defaultReaderPersona);
+    configureSpecReferences(state.config.specReferences);
   }
   function configureReaderPersonas(personas, defaultPersona) {
     const root = $('#reader-persona');
@@ -816,15 +817,35 @@
   function scheduleXrefHide() { cancelXrefHide(); xrefHideTimer = setTimeout(hideXrefPop, 160); }
   function cancelXrefHide() { if (xrefHideTimer) { clearTimeout(xrefHideTimer); xrefHideTimer = null; } }
 
-  const SPEC_REF_PATTERN = /^(?:CP|SC|UC|IA|UNSUP)-[A-Z0-9]+(?:-[A-Z0-9]+)+$/;
-  const SPEC_REF_SOURCES = {
-    CP: { route: '2027/product-spec/customer-promises.html', label: 'Customer promise', cta: 'View customer promise' },
-    SC: { route: '2027/product-spec/scenarios.html', label: 'Supported scenario', cta: 'View supported scenario' },
-    UNSUP: { route: '2027/product-spec/scenarios.html', label: 'Unsupported boundary', cta: 'View unsupported boundary' },
-    UC: { route: '2027/product-spec/user-can.html', label: 'User-can capability', cta: 'View user-can capability' },
-    IA: { route: '2027/product-spec/information-architecture.html', label: 'IA view', cta: 'View IA definition' },
-  };
+  // ID references are opt-in: hosts declare prefixes, source pages, and summary rules in config.specReferences.
   const specRefCache = new Map();
+  let specRefSources = {};
+  let specRefPattern = null;
+  let specRefSearch = null;
+
+  function configureSpecReferences(list) {
+    specRefCache.clear();
+    specRefSources = {};
+    (Array.isArray(list) ? list : []).forEach(source => {
+      if (!source || typeof source !== 'object') return;
+      const prefix = String(source.prefix || '');
+      if (!/^[A-Z][A-Z0-9]*$/.test(prefix) || typeof source.route !== 'string' || !source.route) return;
+      const label = String(source.label || prefix);
+      specRefSources[prefix] = {
+        route: source.route,
+        label,
+        cta: String(source.cta || ('View ' + label.toLowerCase())),
+        summaryColumns: Array.isArray(source.summaryColumns) ? source.summaryColumns.filter(n => Number.isInteger(n) && n >= 0) : null,
+        summaryField: typeof source.summaryField === 'string' ? source.summaryField.trim().toLowerCase() : '',
+        viewRoutePrefix: typeof source.viewRoutePrefix === 'string' ? source.viewRoutePrefix : '',
+        viewIdField: typeof source.viewIdField === 'string' ? source.viewIdField : '',
+      };
+    });
+    const prefixes = Object.keys(specRefSources).sort((a, b) => b.length - a.length);
+    const body = prefixes.length ? '(?:' + prefixes.join('|') + ')-[A-Z0-9]+(?:-[A-Z0-9]+)*' : '';
+    specRefPattern = body ? new RegExp('^' + body + '$') : null;
+    specRefSearch = body ? new RegExp('(' + body + ')') : null;
+  }
 
   function specRefAnchor(id) { return 'spec-' + id.toLowerCase(); }
   function specRefKind(id) { return id.split('-', 1)[0]; }
@@ -837,13 +858,14 @@
   }
 
   function markSpecTargets(container) {
+    if (!specRefPattern) return;
     container.querySelectorAll('tr').forEach(row => {
       const first = row.querySelector(':scope > th:first-child, :scope > td:first-child');
       const id = first ? first.textContent.trim() : '';
-      if (SPEC_REF_PATTERN.test(id) && !row.id) row.id = specRefAnchor(id);
+      if (specRefPattern.test(id) && !row.id) row.id = specRefAnchor(id);
     });
     container.querySelectorAll('h2,h3,h4').forEach(heading => {
-      const match = heading.textContent.trim().match(/((?:CP|SC|UC|IA|UNSUP)-[A-Z0-9]+(?:-[A-Z0-9]+)+)/);
+      const match = heading.textContent.trim().match(specRefSearch);
       if (match && !heading.id) heading.id = specRefAnchor(match[1]);
     });
   }
@@ -858,44 +880,42 @@
     });
   }
 
-  function findIaPreview(id) {
+  function findViewPreview(id, source) {
+    if (!source.viewRoutePrefix || !source.viewIdField) return null;
     for (const [route, doc] of state.docs) {
-      if (!route.startsWith('2027/product-spec/views/') || !doc.content || !doc.content.includes(id)) continue;
+      if (!route.startsWith(source.viewRoutePrefix) || !doc.content || !doc.content.includes(id)) continue;
       const parsed = new DOMParser().parseFromString('<main>' + doc.content + '</main>', 'text/html');
-      const contractId = Array.from(parsed.querySelectorAll('table tr')).some(row => {
+      const declaresId = Array.from(parsed.querySelectorAll('table tr')).some(row => {
         const cells = Array.from(row.querySelectorAll(':scope > th, :scope > td'));
-        return cells.length > 1 && cells[0].textContent.trim() === 'IA ID' && cells[1].textContent.trim() === id;
+        return cells.length > 1 && cells[0].textContent.trim() === source.viewIdField && cells[1].textContent.trim() === id;
       });
-      if (!contractId) continue;
+      if (!declaresId) continue;
       const purpose = parsed.querySelector('.slate-tldr p:not(.slate-tldr__label)');
       if (purpose) return { route, summary: purpose.textContent.trim() };
     }
     return null;
   }
 
-  function authoredSpecSummary(id, target, parsed) {
+  function authoredSpecSummary(id, target, source) {
     const override = target.getAttribute('data-preview-summary');
     if (override) return { summary: override };
-    const kind = specRefKind(id);
-    if (kind === 'IA') {
-      const view = findIaPreview(id);
-      if (view) return view;
-    }
+    const view = findViewPreview(id, source);
+    if (view) return view;
     if (target.matches('tr')) {
       const cells = Array.from(target.querySelectorAll(':scope > th, :scope > td')).map(cell => cell.textContent.trim());
-      if (kind === 'UC') return { summary: [cells[1], cells[6]].filter(Boolean).join(' ') };
-      if (kind === 'SC' || kind === 'UNSUP') return { summary: [cells[2], cells[4]].filter(Boolean).join(' ') };
-      if (kind === 'IA') return { summary: cells[2] || cells[1] || id };
+      const columns = source.summaryColumns && source.summaryColumns.length ? source.summaryColumns : [1];
+      const summary = columns.map(n => cells[n]).filter(Boolean).join(' ');
+      if (summary) return { summary };
     }
-    if (kind === 'CP') {
+    if (source.summaryField) {
       let node = target.nextElementSibling;
       while (node && !/^H[1-6]$/.test(node.tagName)) {
         if (node.matches('table')) {
-          const promiseRow = Array.from(node.querySelectorAll('tbody tr')).find(row => {
+          const fieldRow = Array.from(node.querySelectorAll('tbody tr')).find(row => {
             const field = row.querySelector(':scope > th:first-child, :scope > td:first-child');
-            return field && field.textContent.trim().toLowerCase() === 'customer promise';
+            return field && field.textContent.trim().toLowerCase() === source.summaryField;
           });
-          const value = promiseRow && promiseRow.querySelector(':scope > td:last-child');
+          const value = fieldRow && fieldRow.querySelector(':scope > td:last-child');
           if (value) return { summary: value.textContent.trim() };
         }
         node = node.nextElementSibling;
@@ -907,14 +927,14 @@
 
   function lookupSpecRef(id) {
     if (specRefCache.has(id)) return specRefCache.get(id);
-    const source = SPEC_REF_SOURCES[specRefKind(id)];
+    const source = specRefSources[specRefKind(id)];
     if (!source) return null;
     const doc = state.docs.get(source.route);
     if (!doc || !doc.content) return null;
     const parsed = new DOMParser().parseFromString('<main>' + doc.content + '</main>', 'text/html');
     const target = findSpecTarget(parsed, id);
     if (!target) return null;
-    const authored = authoredSpecSummary(id, target, parsed);
+    const authored = authoredSpecSummary(id, target, source);
     const summary = trimSpecExcerpt(authored.summary, 240);
     const ref = {
       route: authored.route || source.route,
@@ -926,12 +946,11 @@
     specRefCache.set(id, ref);
     return ref;
   }
-
   function processSpecRefs(container) {
     container.querySelectorAll('code:not(pre code)').forEach(code => {
       if (code.closest('a, button, .slate-xref') || code.dataset.specRefReady) return;
       const id = code.textContent.trim();
-      if (!SPEC_REF_PATTERN.test(id)) return;
+      if (!specRefPattern || !specRefPattern.test(id)) return;
       const ref = lookupSpecRef(id);
       if (!ref) return;
       const trigger = document.createElement('button');
@@ -941,7 +960,7 @@
       trigger.setAttribute('aria-haspopup', 'dialog');
       trigger.setAttribute('aria-controls', 'slate-xref-pop');
       trigger.setAttribute('aria-expanded', 'false');
-      trigger.setAttribute('aria-label', id + ' - show ' + SPEC_REF_SOURCES[specRefKind(id)].label.toLowerCase());
+      trigger.setAttribute('aria-label', id + ' - show ' + specRefSources[specRefKind(id)].label.toLowerCase());
       trigger.innerHTML = '<code></code>';
       trigger.querySelector('code').textContent = id;
       trigger._xref = ref;

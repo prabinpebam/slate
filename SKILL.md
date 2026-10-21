@@ -42,7 +42,7 @@ documented component vocabulary in
 
 Apply a **heavy bias toward visuals**:
 
-- If a sentence describes a quantity or change ("CSAT fell from 72% to 59%") → make a **chart**.
+- If a sentence describes a quantity or change ("food supply fell from 72% to 59%") → make a **chart**.
 - If it lists steps or phases → make a **steps/flow** visual.
 - If it compares options → make a **comparison** or a grouped **bar/radar** chart.
 - If it describes parts of a whole → **pie/treemap**.
@@ -342,17 +342,17 @@ Canonical embed:
 
 ```html
 <figure class="slate-figure">
-  <img src="assets/charts/csat-q1-drop.svg"
-       alt="Line chart: CSAT fell from ~72% in Q4 to ~59% in Q1 2026; DSAT rose ~22% to ~33%." />
-  <figcaption>CSAT declined ~13 points quarter over quarter (source: Q1 sample, &lt;2,000 responses).</figcaption>
+  <img src="assets/charts/supply-after-moria.svg"
+       alt="Line chart: food supply fell from ~72% at Rivendell to ~59% after Moria; spoiled stores rose from ~22% to ~33%." />
+  <figcaption>Food supply dropped ~13 points between stops (source: fictional quest ledger).</figcaption>
 </figure>
 <details class="slate-figure-data">
   <summary>Data</summary>
   <table>
-    <thead><tr><th>Quarter</th><th>CSAT</th><th>DSAT</th></tr></thead>
+    <thead><tr><th>Stop</th><th>Food supply</th><th>Spoiled stores</th></tr></thead>
     <tbody>
-      <tr><td>Q4</td><td>72%</td><td>22%</td></tr>
-      <tr><td>Q1</td><td>59%</td><td>33%</td></tr>
+      <tr><td>Rivendell</td><td>72%</td><td>22%</td></tr>
+      <tr><td>After Moria</td><td>59%</td><td>33%</td></tr>
     </tbody>
   </table>
 </details>
@@ -497,17 +497,34 @@ before adding the xref.
 
 ### Specification ID previews
 
-Exact inline-code identifiers (`CP-*`, `SC-*`, `UNSUP-*`, `UC-*`, and `IA-*`) are upgraded
-automatically to preview triggers. Their summaries come only from authored semantic fields:
-customer-promise copy for `CP`, situation plus expected behavior for `SC`/`UNSUP`, user outcome plus
-acceptance for `UC`, and the dedicated view Purpose for `IA`. Do not construct previews by joining
-route, audience, state, platform, or other table columns.
+ID previews are **opt-in per host**. Nothing is upgraded until the host declares its ID prefixes in
+`specReferences` (in `slate.config.json` or the manifest `config` header). For each prefix, the host
+names the page that defines those IDs and how a summary is read from the defining row or heading:
+
+```json
+"specReferences": [
+  { "prefix": "DEC", "route": "decisions.html", "label": "Decision", "cta": "View decision",
+    "summaryColumns": [1, 2] },
+  { "prefix": "REQ", "route": "requirements.html", "label": "Requirement",
+    "summaryField": "Requirement" },
+  { "prefix": "VIEW", "route": "views.html", "label": "View",
+    "viewRoutePrefix": "views/", "viewIdField": "View ID" }
+]
+```
+
+An exact inline code such as `DEC-02` then becomes a preview trigger when the declared page defines
+`DEC-02` in a table's first column or in an `h2`-`h4` heading. For row targets, the summary joins
+the zero-based `summaryColumns` (default `[1]`). For heading targets, `summaryField` names the row in
+the following table whose last cell is the summary. With `viewRoutePrefix` and `viewIdField`, a
+detail page that declares the ID previews its TL;DR and links there instead. Choose columns that
+hold authored meaning; do not build previews from route, audience, state, or platform columns. The
+demo declares `DEC` against the Council decisions on its strategy brief.
 
 When the canonical field is not concise or contextually sufficient, add `data-preview-summary` to
 the source row or heading. Its value is the reviewed summary shown in the card. Keep it to one or two
 sentences, state what matters to a reader deciding whether to follow the link, and update it whenever
 the owning definition materially changes. The CTA continues to point to the canonical item; the
-override does not create a second source of product truth.
+override does not create a second source of truth.
 
 ## Visualization skills (bundled)
 
