@@ -23,7 +23,7 @@ function escapeHtml(value) {
   })[character]);
 }
 
-function hostIndex(sourceRoot, projectName) {
+export function createHostIndex(sourceRoot, projectName) {
   const escapedProjectName = escapeHtml(projectName);
   return fs.readFileSync(path.join(sourceRoot, "shell", "index.html"), "utf8")
     .replace("<title>Docs</title>", `<title>${escapedProjectName}</title>`)
@@ -75,7 +75,7 @@ export function initializeProject({
   const escapedProjectName = escapeHtml(projectName);
   const manifest = syncRuntimeHost(hostRoot, resolvedSource, resolvedRepo);
 
-  writeIfMissing(path.join(hostRoot, "index.html"), hostIndex(resolvedSource, projectName), created);
+  writeIfMissing(path.join(hostRoot, "index.html"), createHostIndex(resolvedSource, projectName), created);
   writeIfMissing(path.join(hostRoot, "slate.config.json"), `${JSON.stringify({
     projectName,
     defaultTheme: "auto",

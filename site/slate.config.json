@@ -1,0 +1,12 @@
+{
+  "projectName": "Slate",
+  "defaultTheme": "auto",
+  "density": "comfortable",
+  "landing": "docs/overview.md",
+  "themeStylesheet": "project.theme.css",
+  "readerPersonas": [
+    { "id": "author", "label": "Authors" },
+    { "id": "reviewer", "label": "Reviewers" }
+  ],
+  "defaultReaderPersona": "all"
+}

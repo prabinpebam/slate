@@ -1,197 +1,181 @@
 # Slate
 
-Slate is a project-agnostic documentation system and agent skill for producing navigable,
-visual-first static documentation sites.
+**Visual-first documentation. A portable viewer. One authoring contract.**
 
-> **Status:** Working (v0.6.3). The canonical host template and runtime assets (`shell/index.html`,
-> `slate.css`, `presentation.js`, `slate.js`, and `vendor/`) form a
-> functioning viewer: it renders Markdown **and** HTML content through one sanitized pipeline, with
-> navigation, search, TOC, theming, config-driven branding, and the full v1 component library. A
-> runnable [`demo/`](demo/) exercises the framework. Package tests cover copied-package
-> initialization, generated-runtime drift and upgrades, and authored attribution routes, anchors,
-> excerpts, and provenance. Presenter-controlled WAAPI motion is experimental; the package includes
-> a versioned manifest schema, validator/mutation suite, and runnable demo. Slate also includes a
-> native SVG Illustration pipeline with medium routing, sanitizer-aware profiles, accessible starter
-> assets, structural/theme validators, viewport entry/replay, and presentation-motion integration.
-> Slate Canvas adds a package-owned, project-agnostic, read-only React Flow surface for structured
-> records, nested groups, repeated placements, named perspectives over one Record Set, and
-> professional viewport navigation. Its fixed
-> scaffold and host contract are documented in [Slate Canvas](canvas/README.md) and the
-> [Canvas capability specification](docs/canvas-capability-spec.md). Editing and authority-aware
-> write-back remain future work.
+Slate turns Markdown, HTML fragments, and structured records into a navigable static documentation
+site. Copy the package into a repository, give an agent your source material, and publish the result
+over plain HTTP. Readers need no installation, and documentation hosts need no build step.
 
-This repository is the **drop-in skill package**. Drop it (unchanged) into any project as `slate/`,
-hand an AI agent some raw content, and the agent - reading [`SKILL.md`](SKILL.md) - produces
-navigable HTML/Markdown pages plus a manifest that the viewer renders consistently.
+**[Documentation and live demos](https://prabinpebam.github.io/slate/)** |
+[Getting started](docs/getting-started.md) |
+[Authoring contract](SKILL.md) |
+[GitHub Pages guide](docs/github-pages.md)
 
-Slate is standalone and dependency-light for authors: hosts need no build step, and the viewer runs
-as static files over plain HTTP.
+## What Slate provides
 
-## Try the demo
+| Capability | What you get |
+| --- | --- |
+| Documentation reader | Navigation, breadcrumbs, search, table of contents, deep links, and light/dark themes |
+| Consistent authoring | One sanitized pipeline for Markdown and HTML, reusable components, and manifest-driven navigation |
+| Visual explanations | Offline chart rendering, native SVG illustrations, and approved vector icon sources |
+| Presentations | Slide-like documents, presenter controls, and experimental manifest-driven motion |
+| Structured information | Read-only Canvas with nested groups, repeated placements, perspectives, search, and viewport controls |
+| Portable hosting | Vendored runtime assets, non-destructive initialization, and SHA-256 runtime drift checks |
 
-Serve this repository over HTTP and open the demo content root:
+The package is `@slate/docs`; [package.json](package.json) is the version authority.
+Canvas editing and authority-aware write-back are not implemented.
+
+## Explore the documentation
+
+Slate documents itself using the same viewer, components, manifests, and runtime that adopters use.
+The [GitHub Pages site](https://prabinpebam.github.io/slate/) combines task-oriented guides with
+working component, Markdown, illustration, and presentation examples. The
+[standalone demo](https://prabinpebam.github.io/slate/demo/) also includes the interactive,
+read-only Canvas and intentional sanitizer test cases.
+
+| Start here | Purpose |
+| --- | --- |
+| [Overview](docs/overview.md) | Understand Slate and choose a next step |
+| [Getting started](docs/getting-started.md) | Initialize Slate in another repository |
+| [Authoring](docs/authoring.md) | Compose pages, choose visuals, and register navigation |
+| [Reader guide](docs/reader-guide.md) | Use search, navigation, themes, and reader perspectives |
+| [Demo guide](docs/demos.md) | Find examples and understand what each demonstrates |
+| [GitHub Pages](docs/github-pages.md) | Build, preview, deploy, troubleshoot, and adapt hosting |
+| [Maintaining Slate](docs/maintaining.md) | Validate package changes and synchronize hosts |
+
+### Preview locally
+
+To try the existing demo directly:
 
 ```powershell
 python -m http.server 8080 --bind 127.0.0.1
-# then open http://127.0.0.1:8080/demo/
+# Open http://127.0.0.1:8080/demo/
 ```
 
-Keep local preview servers bound to loopback. Do not bind this basic server to `::`,
-`0.0.0.0`, or another externally reachable interface.
+To preview the complete documentation site, including its demos:
 
-The viewer needs HTTP (it cannot run from `file://`). Check desktop/mobile layout, keyboard use,
-light/dark themes, navigation, search, and any visualizations changed by the work.
-
-## Reader navigation
-
-The navigation tree and breadcrumbs use the same hierarchy: a page's manifest `group` is its
-complete logical folder path; without a group, Slate uses the page's physical folders. Folder
-breadcrumbs reveal and focus that folder in the navigation tree without changing the page. The
-current page is identified in both places, and opening a page expands its ancestors automatically.
-
-The header's navigation button hides or shows the desktop sidebar without resetting the page,
-scroll position, expanded folders or resized width. The desktop preference is remembered per host.
-On narrow screens it opens a temporary navigation drawer instead; Escape, the backdrop or selecting
-a page closes it. Mobile opening does not overwrite the desktop preference. Folder breadcrumbs can
-reopen navigation at any screen size. Long breadcrumb paths wrap rather than hiding their ancestry.
-
-Run the focused hierarchy regression with `npm run test:navigation`. Its exported
-`testNavigationBrowser(browser, options)` accepts an already-installed Playwright browser and an
-HTTP demo or host URL for rendered keyboard, persistence and responsive checks; no browser download
-is performed by Slate.
-
-## Reader-persona disclosure
-
-Hosts may configure `readerPersonas` and `defaultReaderPersona` in `slate.config.json` or the v2
-manifest config. The optional "View for" selector prioritizes tagged sections without removing
-content, search results, TOC entries, or deep links. See the
-[component contract](components/README.md#reader-persona-disclosure); the demo's component gallery
-includes author and reviewer perspectives.
-Run `npm run test:reader-personas` for the contract and saved-preference checks. Its exported
-`testReaderPersonasBrowser(browser, options)` exercises the demo's disclosure, search, deep links,
-responsive controls, and unconfigured-host behavior using an already-installed Playwright browser.
-
-Existing hosts own their root `index.html`, so runtime synchronization does not add new header
-controls. To enable personas there, copy the `reader-persona` header block from `shell/index.html`
-into the host entry before its theme toggle. Hosts without persona configuration keep their
-existing disclosure behavior.
-
-## What's here
-
-```
-.
-  SKILL.md          # agent instructions: when + how to use this skill
-  AGENTS.md         # working rules for agents contributing to this repository
-  README.md         # this file
-  shell/            # host-entry template plus canonical CSS, JavaScript, and vendor assets
-  demo/             # a runnable content root that exercises the framework
-  components/       # component catalog: one example per component (few-shot patterns)
-  canvas/           # fixed read-only React Flow application source and domain model
-  templates/        # page + landing scaffolds the agent fills in
-  visualization/    # chart rendering, native SVG illustration, and icon retrieval skills
-  docs/             # package architecture, planning, and capability specifications
-  assets/icons/     # system icon set (no emoji)
-  schema/           # JSON Schemas for manifest + config
-  scripts/          # generic initialization, runtime sync/check, and validation tests
-  examples/         # a worked before/after conversion + example manifest
+```powershell
+npm run build:site
+python -m http.server 8080 --bind 127.0.0.1 --directory .\_site
+# Open http://127.0.0.1:8080/
 ```
 
-## For agents
+The site build requires Node.js 22 or later and uses only built-in Node modules; **no dependency
+installation is needed**. The Python command is one option for serving static files.
+Keep preview servers bound to loopback. The viewer fetches content, so `file://` does not work.
 
-Read [`SKILL.md`](SKILL.md). The package's `shell/index.html` is the initializer template; its CSS,
-JavaScript, and vendor files are canonical generated runtime assets. A host's generated `shell/` is
-never hand-edited. **Bias heavily toward visuals**: for any
-data, trend, comparison, proportion, process, hierarchy, or relationship, produce a visualization
-using the bundled [`visualization/`](visualization/README.md) skills and embed it as a figure,
-*before* falling back to prose. You compose pages from [`components/`](components/README.md) using
-[`templates/`](templates/page.html), then write a `docs-manifest.json` validated by
-[`schema/manifest.schema.json`](schema/manifest.schema.json).
+## Adopt Slate in your repository
 
-## For humans
+### 1. Add the complete package
 
-- The complete generic authoring contract is in [`SKILL.md`](SKILL.md), with component examples in
-  [`components/`](components/README.md), schemas in [`schema/`](schema/), and runnable examples in
-  [`demo/`](demo/).
-- Contributing to Slate itself? Read [`AGENTS.md`](AGENTS.md) for the ownership boundary,
-  proportional validation policy, and release steps.
-- Host content, authority, branding, and validation policy stay outside this repository.
-
-## Adopt in a new repository
-
-Add Slate as `slate/` in the consuming repository. Either pin it as a submodule:
+From the consuming repository root, pin Slate as a submodule:
 
 ```powershell
 git submodule add https://github.com/prabinpebam/slate.git slate
 ```
 
-or simply copy the repository contents unchanged into a `slate/` directory.
+Alternatively, copy the repository contents unchanged into a `slate/` directory.
+Do not copy only selected components or duplicate the package under agent discovery folders.
 
-Then run the initializer from the consuming repository root:
+### 2. Initialize a documentation host
 
 ```powershell
 node .\slate\scripts\init-project.mjs --repo . --host docs --project "Project name"
 ```
 
-1. Add or replace content pages and register them in `docs/docs-manifest.json`.
-2. Put project tokens in `docs/project.theme.css`; keep generic component CSS in the package.
-3. Serve the repository over static HTTP and open `docs/index.html`.
+The initializer creates host-owned content, configuration, an entry page, and a thin
+`.github/skills/slate/SKILL.md` discovery adapter. It preserves existing host-owned files while
+refreshing the generated runtime.
 
-The initializer is non-destructive for host-owned files and always refreshes generated runtime
-files. It also creates the thin `.github/skills/slate/SKILL.md` adapter that points back to this
-canonical Slate package.
+### 3. Author and preview
 
-## Synchronize and validate a host
+- Add Markdown pages or HTML body fragments and register them in `docs/docs-manifest.json`.
+- Set branding in `docs/slate.config.json` and tokens in `docs/project.theme.css`.
+- Give your agent [SKILL.md](SKILL.md), the source material, and the desired documentation task.
+- Serve the host over HTTP and open `docs/index.html`.
 
-Run these from the consuming repository root:
+See [Getting started](docs/getting-started.md) for the resulting layout and upgrade procedure.
+
+## Ownership and portability
+
+| Layer | Owns |
+| --- | --- |
+| Package | Generic skill, runtime, components, templates, schemas, visualizations, Canvas, demo, initializer, and tests |
+| Host | Content, sources, manifest, root entry page, config, theme, authority, and policy |
+| Adapter | Repository-specific discovery and additional rules only |
+
+**Never hand-edit a host's generated `shell/`.** Synchronize and check it from the consuming
+repository root:
 
 ```powershell
 node .\slate\scripts\runtime-host.mjs sync --repo . --host docs
 node .\slate\scripts\runtime-host.mjs check --repo . --host docs
-node .\slate\scripts\validate-document-attributions.mjs --repo . --host docs
-node .\slate\scripts\validate-presentation-motion.mjs --page <deck.html> --motion <deck.motion.json>
 ```
 
-`docs/.slate-runtime.json` pins the package name/version and canonical SHA-256 hashes. The checker
-rejects changed, missing, stale, obsolete, and unmanaged files in generated `docs/shell/`.
+The host's `.slate-runtime.json` records package identity and canonical hashes. The checker rejects
+missing, changed, stale, obsolete, or unmanaged runtime files. Host branding and project policy
+never become generic package defaults.
 
-## Develop Slate itself
+## Publish with GitHub Pages
 
-Run these from this repository root:
+The [Pages workflow](.github/workflows/pages.yml) validates and builds a curated `_site/` artifact,
+then deploys it on pushes to `main`. Pull requests validate the same artifact without deploying.
+The published root is the Slate documentation reader; `demo/` remains a separate runnable host.
+
+Repository administrators must select **Settings > Pages > Build and deployment > Source >
+GitHub Actions**. Once the workflow is on the default branch, a push to `main` or a manual workflow
+run publishes the site. No custom domain, Jekyll build, or committed generated site is required.
+
+The [GitHub Pages guide](docs/github-pages.md) covers initial setup, permissions, URL structure,
+local preview, content updates, troubleshooting, and deployment from another repository.
+
+## Repository map
+
+| Path | Role |
+| --- | --- |
+| [SKILL.md](SKILL.md) | Complete generic authoring contract |
+| [AGENTS.md](AGENTS.md) | Contribution, ownership, validation, and release rules |
+| [docs/](docs/) | Slate's guides and capability specifications |
+| [site/](site/) | First-party site manifest, config, and host theme |
+| [demo/](demo/) | Runnable examples and feature fixtures |
+| [shell/](shell/) | Canonical runtime and host entry template |
+| [components/](components/README.md) | Component catalog and few-shot patterns |
+| [templates/](templates/) | Page, presentation, and Canvas starters |
+| [visualization/](visualization/README.md) | Chart, SVG illustration, and iconography subskills |
+| [presentation/](presentation/SKILL.md) | Presentation authoring and motion contracts |
+| [canvas/](canvas/README.md) | Read-only Canvas source and domain model |
+| [schema/](schema/) | Manifest, config, Canvas, and motion schemas |
+| [scripts/](scripts/) | Initialization, runtime management, site build, and validation |
+| [examples/](examples/) | Worked before/after conversion |
+
+## Develop and validate
+
+Choose checks for the behavior being changed; do not run every suite for a prose edit.
+The documentation publishing path has a dependency-free regression suite:
+
+```powershell
+npm run test:site
+npm run build:site
+```
+
+For package development, install dependencies through your organization's approved package source,
+then run the relevant checks:
 
 ```powershell
 npm install
-
 npm run test:runtime-host
 npm run test:portability
 npm run test:attributions
-npm run test:presentation-motion
-npm run test:reader-personas
 npm run test:navigation
+npm run test:reader-personas
+npm run test:presentation-motion
 npm run test:canvas-contracts
+npm run test:chart
 npm run test:svg-illustration
 npm run validate:svg-illustration
 ```
 
-`shell/canvas/` is generated from `canvas/src/` by `npm run build:canvas`. Rebuild the canvas
-**before** synchronizing any host, otherwise that host's runtime drift check will report stale
-canvas assets. See [`AGENTS.md`](AGENTS.md) for the full contribution and release contract.
-
-## Ownership and evolution
-
-- Package-owned: generic skill, runtime, components, templates, schemas, visualization subskills,
-  demo, initialization, and tests.
-- Host-owned: content, sources, manifest, `index.html`, config, theme, authority, and policy.
-- Adapter-owned: repository-specific discovery and additional rules only; never copied runtime or
-  component contracts.
-
-Learn from real hosts, but implement reusable changes in this package first with a generic fixture
-or test. Synchronize the host only after package validation. Keep project meaning and branding in
-the host even when they motivated the generic improvement.
-
-## Status of shell files
-
-The package's `shell/slate.css`, `shell/presentation.js`, `shell/slate.js`, and `shell/vendor/*` files are the only editable
-runtime authority. Host copies of those assets are generated, recorded, and drift-checked. The
-initializer derives the host-owned root `index.html` from `shell/index.html`; later host titles,
-paths, and theme links remain host composition rather than generated runtime. Vendor dependencies
-are included, so a generated host is self-contained once served over HTTP.
+`shell/canvas/` is generated from `canvas/src/` by `npm run build:canvas`. Rebuild it **before**
+synchronizing any host. The Pages build uses the checked-in Canvas output; it does not rebuild or
+modify canonical runtime assets. See [Maintaining Slate](docs/maintaining.md) and
+[AGENTS.md](AGENTS.md) for validation scope and release ordering.

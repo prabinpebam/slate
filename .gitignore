@@ -3,6 +3,7 @@ node_modules/
 
 # Build and test artifacts
 test-results/
+_site/
 *.tsbuildinfo
 
 # Editor and OS
