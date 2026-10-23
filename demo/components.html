@@ -78,3 +78,21 @@
     <tr><td>Branding</td><td>Derived</td><td>Declarative config</td></tr>
   </tbody>
 </table>
+
+<h2>Disclosure groups</h2>
+<p>Nested disclosure groups keep supporting material out of the main reading flow.
+  Links to a contained block reveal each enclosing group before scrolling to it.</p>
+<details id="disclosure-outer">
+  <summary>Supporting reference</summary>
+  <p>Open the nested group to inspect its reference block.</p>
+  <details id="disclosure-inner">
+    <summary>Reference block</summary>
+    <figure>
+      <img src="assets/disclosure-reference.svg" alt="Tall supporting reference layout" loading="lazy">
+      <figcaption>A lazy-loaded reference can change the position of the next block.</figcaption>
+    </figure>
+    <figure id="revision-disclosure-target">
+      <figcaption>A reference block inside two disclosure groups.</figcaption>
+    </figure>
+  </details>
+</details>

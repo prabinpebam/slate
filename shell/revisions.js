@@ -115,6 +115,7 @@ export function attach({ navigate, reveal, hasPage }) {
   let externalConflict = false;
   let cacheBlocked = false;
   let menuId = 0;
+  let cancelTargetScroll = () => {};
 
   const toggle = button('', () => setOpen(!open), 'revision-toggle');
   toggle.append(node('span', 'rate_review', 'material-symbols-outlined'));
@@ -322,6 +323,7 @@ export function attach({ navigate, reveal, hasPage }) {
     toggle.setAttribute('aria-expanded', String(value));
     toggle.setAttribute('aria-label', value ? 'Close revisions' : 'Open revisions');
     if (!value) {
+      cancelTargetScroll();
       panel.querySelectorAll('.revision-menu-popover:popover-open').forEach(menu => menu.hidePopover());
       if (dialog.open) dialog.close();
       setSelecting(false);
@@ -406,6 +408,67 @@ export function attach({ navigate, reveal, hasPage }) {
     link.title = `Go to the anchored block: ${target.text.slice(0, 240) || `[${target.tag}]`}`;
     wrapper.append(link);
     return wrapper;
+  }
+
+  function focusTarget(element) {
+    cancelTargetScroll();
+    reveal(element);
+    element.setAttribute('tabindex', '-1');
+    element.classList.add('revision-target-focus');
+    // Unsized lazy images above the target can change its position after the first scroll.
+    const images = new Set([...document.querySelectorAll('.page-body img')].filter(image =>
+      !image.complete && !image.closest('details:not([open]),.doc-section.collapsed')
+      && (element.contains(image) || (image.compareDocumentPosition(element) & Node.DOCUMENT_POSITION_FOLLOWING))));
+    const content = document.querySelector('#content');
+    const duration = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 200;
+    let frame;
+    let startedAt = null;
+    let startTop;
+    const interactions = ['wheel', 'touchstart', 'pointerdown', 'keydown'];
+    function stop() {
+      cancelAnimationFrame(frame);
+      images.forEach(image => {
+        image.removeEventListener('load', loaded);
+        image.removeEventListener('error', loaded);
+      });
+      interactions.forEach(type => document.removeEventListener(type, stop, true));
+      cancelTargetScroll = () => {};
+    }
+    function position(timestamp) {
+      frame = null;
+      if (!element.isConnected) { stop(); return; }
+      if (startedAt === null) {
+        startedAt = timestamp;
+        startTop = content.scrollTop;
+      }
+      const bounds = element.getBoundingClientRect();
+      const viewport = content.getBoundingClientRect();
+      const destination = Math.max(0, Math.min(content.scrollHeight - content.clientHeight,
+        content.scrollTop + bounds.top - viewport.top - (content.clientHeight - bounds.height) / 2));
+      const progress = duration ? Math.min((timestamp - startedAt) / duration, 1) : 1;
+      const eased = 1 - (1 - progress) ** 3;
+      content.scrollTo({ top: startTop + (destination - startTop) * eased, behavior: 'instant' });
+      if (progress < 1) frame = requestAnimationFrame(position);
+      else {
+        startedAt = null;
+        element.focus({ preventScroll: true });
+        if (!images.size) stop();
+      }
+    }
+    function loaded(event) {
+      const image = event.currentTarget;
+      image.removeEventListener('load', loaded);
+      image.removeEventListener('error', loaded);
+      images.delete(image);
+      if (!frame) frame = requestAnimationFrame(position);
+    }
+    images.forEach(image => {
+      image.addEventListener('load', loaded);
+      image.addEventListener('error', loaded);
+    });
+    interactions.forEach(type => document.addEventListener(type, stop, { capture: true, passive: true }));
+    cancelTargetScroll = stop;
+    frame = requestAnimationFrame(position);
   }
 
   function actionMenu(label, groups, className = '') {
@@ -829,6 +892,7 @@ export function attach({ navigate, reveal, hasPage }) {
       if (record) record.element = replacement;
     },
     capture(root, page) {
+      cancelTargetScroll();
       if (!safeContentPath(page.path) || !safeContentPath(page.route)) {
         records = [];
         report('This content root is not a local host-relative path. Revision selection is unavailable for this page.');
@@ -870,15 +934,7 @@ export function attach({ navigate, reveal, hasPage }) {
           && record.page.path === source.path && record.page.content === source.content
           && record.target.selector === target.selector && record.target.html === target.html);
         if (!match) report('This target is stale or missing. Compare its saved source and block snapshots before retargeting; Slate will not guess.');
-        else {
-          reveal(match.element);
-          match.element.setAttribute('tabindex', '-1');
-          match.element.classList.add('revision-target-focus');
-          requestAnimationFrame(() => {
-            match.element.scrollIntoView({ block: 'center', behavior: 'instant' });
-            match.element.focus({ preventScroll: true });
-          });
-        }
+        else focusTarget(match.element);
       }
     },
   };

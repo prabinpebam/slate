@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="1200" viewBox="0 0 640 1200">
+  <title>Supporting reference layout</title>
+  <rect width="640" height="1200" rx="16" fill="#eef1f5"/>
+  <rect x="40" y="40" width="560" height="240" rx="8" fill="#c9d8e7"/>
+  <rect x="40" y="320" width="360" height="20" rx="4" fill="#6c8196"/>
+  <rect x="40" y="364" width="560" height="12" rx="4" fill="#b4c0cc"/>
+  <rect x="40" y="392" width="480" height="12" rx="4" fill="#b4c0cc"/>
+  <rect x="40" y="460" width="560" height="300" rx="8" fill="#d4dfe9"/>
+  <rect x="40" y="804" width="320" height="20" rx="4" fill="#6c8196"/>
+  <rect x="40" y="848" width="560" height="12" rx="4" fill="#b4c0cc"/>
+  <rect x="40" y="876" width="480" height="12" rx="4" fill="#b4c0cc"/>
+  <rect x="40" y="944" width="560" height="216" rx="8" fill="#d4dfe9"/>
+</svg>

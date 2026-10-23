@@ -80,8 +80,10 @@ keeps the selected revision and comments available. Use **Current revision** to 
 active revisions. The header's **Revision actions** menu groups rename, archive, agent handoff,
 and optional JSON backup tools; rename and archive open focused dialogs instead of permanent
 forms. Each comment has its own actions menu and directly visible block links. Click a
-page/block link to navigate to that exact passage, expand its section, and highlight and focus
-the block. For comments spanning several blocks or pages, each anchor has its own link.
+page/block link to navigate to that exact passage, expand its section and any enclosing
+disclosure groups, and highlight and focus the block inside the document pane.
+The scroll animates over 200 ms; reduced-motion preferences keep it instant.
+For comments spanning several blocks or pages, each anchor has its own link.
 **Show excerpts** expands saved previews without hiding navigation. Expand **Archived** to
 inspect earlier feedback; its block links work without reopening the revision.
 

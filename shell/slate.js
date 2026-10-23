@@ -475,7 +475,9 @@
     heading.prepend(t);
   }
   function expandToTarget(el) {
-    if (!el) return; let s = el.closest('.doc-section');
+    if (!el) return;
+    for (let disclosure = el.closest('details'); disclosure; disclosure = disclosure.parentElement?.closest('details')) disclosure.open = true;
+    let s = el.closest('.doc-section');
     while (s) { if (s.classList.contains('collapsed')) { const tg = s.querySelector(':scope > h2 > .collapse-toggle, :scope > h3 > .collapse-toggle'); if (tg) tg.click(); else s.classList.remove('collapsed'); } s = s.parentElement ? s.parentElement.closest('.doc-section') : null; }
   }
 

@@ -143,10 +143,12 @@ export async function testRevisionsBrowser(page, { url, mode = 'workspace', scre
       const copy = element.cloneNode(true);
       copy.querySelectorAll('.revision-block-toggle,.heading-anchor,.collapse-toggle').forEach(control => control.remove());
       const bounds = element.getBoundingClientRect();
+      const content = document.querySelector('#content').getBoundingClientRect();
       return {
         tag: element.localName, text: copy.textContent.trim().replace(/\s+/g, ' '),
-        revealed: !element.closest('.doc-section.collapsed'),
-        inViewport: bounds.bottom > 0 && bounds.top < innerHeight,
+        revealed: !element.closest('.doc-section.collapsed,details:not([open])'),
+        inViewport: bounds.height > 0 && bounds.bottom > Math.max(content.top, 0)
+          && bounds.top < Math.min(content.bottom, innerHeight),
       };
     });
     expect(focused.tag === target.tag && focused.text === target.text, 'Navigation highlights and focuses the exact anchored block');
@@ -199,16 +201,129 @@ export async function testRevisionsBrowser(page, { url, mode = 'workspace', scre
   await panel.getByRole('button', { name: 'Reopen revision', exact: true }).click();
   await page.waitForFunction(() => document.querySelector('.revision-meta')?.textContent.startsWith('Active'));
   expect(await panel.locator('.revision-comment').count() === 1, 'Reopen preserves existing comments');
+  await page.evaluate(() => { location.hash = 'demo/components.html'; });
+  await page.waitForFunction(() => document.querySelector('#document h1')?.textContent === 'Component gallery');
+  await page.locator('#disclosure-outer > summary').click();
+  await page.locator('#disclosure-inner > summary').click();
   await panel.getByRole('button', { name: 'Select blocks', exact: true }).click();
-  await page.locator('.revision-block-toggle:visible').first().click();
+  await page.locator('#revision-disclosure-target > .revision-block-toggle').click();
   await panel.locator('#revision-comment-text').fill('A second comment after reopening.');
   await panel.getByRole('button', { name: 'Add comment', exact: true }).click();
   await page.waitForFunction(() => document.querySelector('.revision-comments h3')?.textContent === 'Comments (2)');
   const singleComment = panel.locator('.revision-comment').last();
   expect(await singleComment.locator('.revision-target-link:visible').count() === 1, 'A single-block comment exposes its destination immediately');
+  await page.locator('#disclosure-inner > summary').click();
+  await page.locator('#disclosure-outer > summary').click();
+  await page.evaluate(() => document.querySelector('#content').scrollTo({ top: 0, behavior: 'instant' }));
   await singleComment.getByRole('button', { name: /^View target 1:/ }).click();
-  await page.waitForFunction(() => document.activeElement?.classList.contains('revision-target-focus'));
-  expect(await page.locator('.revision-target-focus').evaluate(element => element.localName === 'h1'), 'A single-block comment jumps to its anchored heading');
+  async function expectDisclosureTarget() {
+    await page.waitForFunction(() => {
+      const element = document.querySelector('#revision-disclosure-target');
+      if (!element || document.activeElement !== element) return false;
+      const content = document.querySelector('#content');
+      const bounds = element.getBoundingClientRect();
+      const viewport = content.getBoundingClientRect();
+      const destination = Math.max(0, Math.min(content.scrollHeight - content.clientHeight,
+        content.scrollTop + bounds.top - viewport.top - (content.clientHeight - bounds.height) / 2));
+      return Math.abs(content.scrollTop - destination) <= 1;
+    });
+    const position = await page.locator('#revision-disclosure-target').evaluate(element => {
+      const bounds = element.getBoundingClientRect();
+      const content = document.querySelector('#content');
+      const viewport = content.getBoundingClientRect();
+      return {
+        revealed: !element.closest('details:not([open]),.doc-section.collapsed'),
+        centered: bounds.top + bounds.height / 2 >= viewport.top
+          && bounds.top + bounds.height / 2 <= viewport.bottom,
+        scrolled: content.scrollTop > 500,
+      };
+    });
+    expect(position.revealed, 'Target navigation opens every nested native disclosure');
+    expect(position.centered && position.scrolled, 'A deep anchor lands inside the scrolled document pane, not just the browser viewport');
+  }
+  await expectDisclosureTarget();
+  async function measureTargetScroll() {
+    await page.evaluate(() => {
+      window.__slateScrollFrames = [];
+      window.__slateOriginalAnimationFrame = window.requestAnimationFrame;
+      window.requestAnimationFrame = callback => window.__slateOriginalAnimationFrame(timestamp => {
+        callback(timestamp);
+        if (callback.name === 'position') {
+          window.__slateScrollFrames.push({
+            timestamp, top: document.querySelector('#content').scrollTop,
+            focused: document.activeElement?.id === 'revision-disclosure-target',
+          });
+        }
+      });
+    });
+    try {
+      await singleComment.getByRole('button', { name: /^View target 1:/ }).click();
+      await page.waitForFunction(() => window.__slateScrollFrames.at(-1)?.focused);
+      return await page.evaluate(() => window.__slateScrollFrames);
+    } finally {
+      await page.evaluate(() => { window.requestAnimationFrame = window.__slateOriginalAnimationFrame; });
+    }
+  }
+  const reducedFrames = await measureTargetScroll();
+  expect(reducedFrames.length === 1 && reducedFrames[0].top > 500, 'Reduced motion reaches the deep anchor in one frame without animation');
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  const smoothFrames = await measureTargetScroll();
+  const elapsed = smoothFrames.at(-1).timestamp - smoothFrames[0].timestamp;
+  const previousElapsed = smoothFrames.at(-2).timestamp - smoothFrames[0].timestamp;
+  const largestFrame = Math.max(...smoothFrames.slice(1).map((frame, index) => frame.timestamp - smoothFrames[index].timestamp));
+  expect(elapsed >= 200 && previousElapsed < 200 && elapsed <= 200 + largestFrame + 1,
+    'Smooth scrolling completes at 200 ms, rounded to the next animation frame');
+  expect(smoothFrames.some(frame => frame.top > 0 && frame.top < smoothFrames.at(-1).top),
+    'The document moves through intermediate scroll positions rather than snapping');
+  await expectDisclosureTarget();
+  for (const interrupted of [false, true]) {
+    let releaseImage;
+    const imageReleased = new Promise(resolve => { releaseImage = resolve; });
+    let imageRequested = false;
+    const imagePattern = '**/demo/assets/disclosure-reference.svg';
+    const delayImage = async route => {
+      imageRequested = true;
+      await imageReleased;
+      await route.continue();
+    };
+    await page.route(imagePattern, delayImage);
+    try {
+      await page.evaluate(() => { location.hash = 'docs/reader-guide.md'; });
+      await page.waitForFunction(() => document.querySelector('#document h1')?.textContent === 'Reader guide');
+      await singleComment.getByRole('button', { name: /^View target 1:/ }).click();
+      await expectDisclosureTarget();
+      expect(imageRequested, 'The lazy image preceding the anchor is still loading during the initial jump');
+      if (interrupted) {
+        await page.keyboard.press('Home');
+        await page.evaluate(() => document.querySelector('#content').scrollTo({ top: 0, behavior: 'instant' }));
+      }
+      releaseImage();
+      await page.waitForFunction(() => {
+        const image = document.querySelector('#disclosure-inner img');
+        return image?.complete && image.naturalHeight > 1000;
+      });
+      await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+      if (interrupted) {
+        expect(await page.locator('#content').evaluate(element => element.scrollTop === 0),
+          'User interaction cancels layout-following so image loads do not pull the reader back');
+      } else {
+        await expectDisclosureTarget();
+        expect(await page.locator('#disclosure-inner img').evaluate(image => image.getBoundingClientRect().bottom
+          <= document.querySelector('#revision-disclosure-target').getBoundingClientRect().top),
+        'The settled image layout precedes the correctly positioned target');
+      }
+    } finally {
+      releaseImage();
+      await page.unroute(imagePattern, delayImage);
+    }
+  }
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.evaluate(() => { location.hash = 'docs/reader-guide.md'; });
+  await page.waitForFunction(() => document.querySelector('#document h1')?.textContent === 'Reader guide');
+  await singleComment.getByRole('button', { name: /^View target 1:/ }).click();
+  await expectDisclosureTarget();
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
   await menuAction('Remove comment', 'Comment 2 actions');
   await panel.getByRole('button', { name: 'Confirm removal', exact: true }).click();
   await page.waitForFunction(() => document.querySelector('.revision-comments h3')?.textContent === 'Comments (1)');

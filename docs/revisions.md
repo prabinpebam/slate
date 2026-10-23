@@ -35,9 +35,14 @@ blocks instead of covering the whole document; touch devices retain visible sele
 
 Each comment exposes one navigation link per anchored block, including multi-page comments and
 archived feedback. Clicking a link opens its page, expands enclosing sections, scrolls to the
-exact block, and gives it a visible highlight and keyboard focus. Navigation does not require
+exact block, opens all enclosing native disclosure groups (including nested groups), and gives
+it a visible highlight and keyboard focus inside the document pane. Navigation does not require
 expanding the saved excerpts or reopening an archive. Missing pages and stale source snapshots
 produce an explicit error rather than navigating to a guessed target.
+Scrolling uses a 200 ms ease-out animation within the document pane, or an instant jump when
+the reader prefers reduced motion. User interaction cancels an in-progress animation.
+If unsized lazy images above the block load after the jump, Slate keeps the block in view as
+their layout settles. Further user interaction or navigation stops that adjustment immediately.
 
 ## Persistence and handoff
 
@@ -195,13 +200,16 @@ add agent instructions and reader guidance; exercise the DoD; synchronize the de
 host only through the runtime tool. This table is the acceptance contract, not an assertion that
 an unexecuted check passed.
 
-### Verification for 0.12.1
+### Verification for 0.12.2
 
 | Area | Executed evidence |
 |------|-------------------|
 | Contract, storage, server, and agent CLI | 76 passing cases, including mutations, lifecycle, fingerprints, conflicts, host isolation, path/origin checks, and exclusive-write cleanup |
-| Reader workflow | 70 workspace browser assertions and 7 static read-only assertions; HTML/Markdown, cross-page comments, archive/reopen, keyboard, narrow layout, themes, and print |
+| Reader workflow | 88 workspace browser assertions and 7 static read-only assertions; HTML/Markdown, cross-page comments, archive/reopen, keyboard, narrow layout, themes, and print |
 | Direct anchor navigation | Single/multi-block links visible without expanding excerpts; same-page and cross-page jumps focus, highlight, reveal, and scroll to the exact block; archived targets work without reopening; stale/missing sources are rejected |
+| Hidden and shifting targets | Nested disclosures open before scrolling; deep targets land inside the document pane in reduced/full motion and 375px layouts; delayed lazy-image loads preserve the target position until user interaction cancels adjustment |
+| Scroll duration | Browser animation-frame measurements verify intermediate positions and completion at 200 ms (rounded to the next display frame); reduced motion reaches the same destination in one frame |
+| Reported host anchor | The reported figure inside a closed disclosure was reproduced offscreen with no focus; after the fix, its disclosure opened, keyboard focus reached it, and the entire figure remained within the document pane after images loaded |
 | Organized controls | At most five visible buttons and one primary action in the empty active editor; grouped keyboard-accessible menus, focused dialogs, collapsed targets, outside-click dismissal, and quiet desktop gutters |
 | Selection boundary | Exactly 100 blocks accepted; the 101st rejected; an oversized Shift range left the existing 81-block selection unchanged |
 | Real host persistence | A browser-created comment was inspected in the parent project's `.slate/revisions`; CLI source checking and archival were reflected in the reader's collapsed archive group |
