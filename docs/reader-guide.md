@@ -79,8 +79,11 @@ blocks, enter a comment, and keep navigating to collect more feedback across pag
 keeps the selected revision and comments available. Use **Current revision** to switch between
 active revisions. The header's **Revision actions** menu groups rename, archive, agent handoff,
 and optional JSON backup tools; rename and archive open focused dialogs instead of permanent
-forms. Each comment has its own actions menu. Expand its block/page summary to inspect targets,
-or expand **Archived** to reopen earlier feedback.
+forms. Each comment has its own actions menu and directly visible block links. Click a
+page/block link to navigate to that exact passage, expand its section, and highlight and focus
+the block. For comments spanning several blocks or pages, each anchor has its own link.
+**Show excerpts** expands saved previews without hiding navigation. Expand **Archived** to
+inspect earlier feedback; its block links work without reopening the revision.
 
 Slate's local server automatically writes JSON into `.slate/revisions/` at the parent project root,
 where an agent can discover it directly. You never need to save or export JSON for handoff. Plain

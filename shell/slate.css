@@ -1056,7 +1056,7 @@ h1 .slate-xref, h2 .slate-xref, h3 .slate-xref, h4 .slate-xref { position: relat
 .revision-panel .revision-picker-label { font-size: var(--font-size-100); letter-spacing: .06em; text-transform: uppercase; color: var(--color-neutral-fg-2); }
 .revision-panel select { height: 36px; text-overflow: ellipsis; font-weight: var(--font-weight-semibold); }
 .revision-archived { margin-top: var(--space-s); max-height: 160px; overflow-y: auto; }
-.revision-archived summary, .revision-targets summary { cursor: pointer; color: var(--color-neutral-fg-2); font-size: var(--font-size-200); padding-block: var(--space-xs); }
+.revision-archived summary, .revision-target-previews summary { cursor: pointer; color: var(--color-neutral-fg-2); font-size: var(--font-size-200); padding-block: var(--space-xs); }
 .revision-panel .revision-choice { display: block; width: 100%; padding-inline: var(--space-s); text-align: left; font-size: var(--font-size-200); }
 .revision-choice[aria-pressed="true"] { font-weight: var(--font-weight-semibold); background: var(--color-subtle-bg-selected); }
 .revision-panel .revision-meta { margin: 0 0 var(--space-s); }
@@ -1075,11 +1075,13 @@ h1 .slate-xref, h2 .slate-xref, h3 .slate-xref, h4 .slate-xref { position: relat
 .revision-comment-header .revision-menu { margin-left: auto; }
 .revision-comment-status { font-size: var(--font-size-100); border-radius: var(--radius-sm); padding: var(--space-xxs) var(--space-xs); background: var(--color-neutral-bg-3); color: var(--color-neutral-fg-2); }
 .revision-comment-text, .revision-resolution { white-space: pre-wrap; line-height: 1.6; }
-.revision-targets summary { display: flex; align-items: center; gap: var(--space-xs); color: var(--color-brand-fg-1); }
-.revision-targets summary::after { content: 'expand_more'; margin-left: auto; font-family: 'Material Symbols Outlined'; font-size: 18px; }
-.revision-targets[open] summary::after { transform: rotate(180deg); }
-.revision-target { border-left: 2px solid var(--color-neutral-stroke-1); padding-left: var(--space-s); margin-block: var(--space-s); }
-.revision-panel .revision-target-link { justify-content: flex-start; padding: 0; color: var(--color-brand-fg-1); font-size: var(--font-size-200); text-align: left; }
+.revision-target-count { display: flex; align-items: center; gap: var(--space-xs); color: var(--color-neutral-fg-2); font-size: var(--font-size-200); }
+.revision-target { min-width: 0; margin-block: var(--space-xs); }
+.revision-panel .revision-target-link { justify-content: flex-start; width: 100%; padding: var(--space-xs); color: var(--color-brand-fg-1); font-size: var(--font-size-200); text-align: left; }
+.revision-target-link .revision-button-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.revision-target-previews { margin-top: var(--space-s); }
+.revision-target-previews .revision-target { border-left: 2px solid var(--color-neutral-stroke-1); padding-left: var(--space-s); margin-block: var(--space-s); }
+.revision-quote-label { font-size: var(--font-size-200); font-weight: var(--font-weight-semibold); }
 .revision-quote { font-size: var(--font-size-200); color: var(--color-neutral-fg-2); line-height: 1.5; }
 .revision-remove-confirmation { padding-top: var(--space-s); border-top: 1px solid var(--color-neutral-stroke-2); }
 .revision-panel .revision-danger { color: var(--color-status-danger-fg); }

@@ -24,7 +24,7 @@ the revision is active. Removing a comment is explicit; archiving never deletes 
 | Header | Revision title, new-revision icon, actions menu, close icon | Grouped rename/archive, handoff/backup, and storage tools |
 | Context | Native Current revision picker | Collapsed Archived history |
 | Composer | Block-selection toggle, compact selection count, feedback field, one primary Add comment action | Clear-selection icon only when blocks are selected; cancel when editing |
-| Feedback | Readable comment cards and a compact per-comment actions menu | Expand block/page summaries for target previews; edit or explicitly confirm removal |
+| Feedback | Readable comment cards, directly visible page/block navigation links, and a compact per-comment actions menu | Show excerpts for saved target previews; edit or explicitly confirm removal |
 | Footer | Compact automatic-save status | Full fixed storage location in the status tooltip; explicit errors and recovery actions when needed |
 
 Rename and archive use modal dialogs with a single focused task; their forms never occupy the
@@ -32,6 +32,12 @@ resting pane. Menus support arrow keys, Home/End, outside-click dismissal, and E
 restoration. Escape dismisses an open menu or dialog before affecting selection or the pane.
 During block selection, desktop gutter controls appear on hover, keyboard focus, or selected
 blocks instead of covering the whole document; touch devices retain visible selection controls.
+
+Each comment exposes one navigation link per anchored block, including multi-page comments and
+archived feedback. Clicking a link opens its page, expands enclosing sections, scrolls to the
+exact block, and gives it a visible highlight and keyboard focus. Navigation does not require
+expanding the saved excerpts or reopening an archive. Missing pages and stale source snapshots
+produce an explicit error rather than navigating to a guessed target.
 
 ## Persistence and handoff
 
@@ -189,12 +195,13 @@ add agent instructions and reader guidance; exercise the DoD; synchronize the de
 host only through the runtime tool. This table is the acceptance contract, not an assertion that
 an unexecuted check passed.
 
-### Verification for 0.12.0
+### Verification for 0.12.1
 
 | Area | Executed evidence |
 |------|-------------------|
 | Contract, storage, server, and agent CLI | 76 passing cases, including mutations, lifecycle, fingerprints, conflicts, host isolation, path/origin checks, and exclusive-write cleanup |
-| Reader workflow | 55 workspace browser assertions and 7 static read-only assertions; HTML/Markdown, cross-page comments, archive/reopen, keyboard, narrow layout, themes, and print |
+| Reader workflow | 70 workspace browser assertions and 7 static read-only assertions; HTML/Markdown, cross-page comments, archive/reopen, keyboard, narrow layout, themes, and print |
+| Direct anchor navigation | Single/multi-block links visible without expanding excerpts; same-page and cross-page jumps focus, highlight, reveal, and scroll to the exact block; archived targets work without reopening; stale/missing sources are rejected |
 | Organized controls | At most five visible buttons and one primary action in the empty active editor; grouped keyboard-accessible menus, focused dialogs, collapsed targets, outside-click dismissal, and quiet desktop gutters |
 | Selection boundary | Exactly 100 blocks accepted; the 101st rejected; an oversized Shift range left the existing 81-block selection unchanged |
 | Real host persistence | A browser-created comment was inspected in the parent project's `.slate/revisions`; CLI source checking and archival were reflected in the reader's collapsed archive group |

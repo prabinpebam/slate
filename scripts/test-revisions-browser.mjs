@@ -74,7 +74,7 @@ export async function testRevisionsBrowser(page, { url, mode = 'workspace', scre
   await page.waitForFunction(() => document.querySelector('#document h1')?.textContent === 'Reader guide');
   expect((await panel.locator('#revision-comment-text').inputValue()).startsWith('Clarify'), 'Draft survives navigation');
   expect((await panel.locator('.revision-selection-count').textContent()).startsWith('1 block'), 'Selection survives navigation');
-  await page.locator('.revision-block-toggle:visible').first().click();
+  await page.locator('.revision-block-toggle:visible').nth(4).click();
   await panel.getByRole('button', { name: 'Add comment', exact: true }).click();
   await page.waitForFunction(() => document.querySelector('.revision-comments h3')?.textContent === 'Comments (1)');
   await page.waitForFunction(() => document.querySelector('.revision-storage').dataset.state === 'saved');
@@ -134,11 +134,51 @@ export async function testRevisionsBrowser(page, { url, mode = 'workspace', scre
   await panel.locator('#revision-comment-text').fill('Updated feedback: clarify the lifecycle.');
   await panel.getByRole('button', { name: 'Save comment', exact: true }).click();
   await page.waitForFunction(() => document.querySelector('.revision-comment-text')?.textContent.startsWith('Updated feedback'));
-  expect(await panel.locator('.revision-targets').getAttribute('open') === null, 'Target previews start collapsed so feedback takes priority');
-  await panel.locator('.revision-targets summary').click();
-  await panel.getByRole('button', { name: /^View target 1:/ }).click();
-  await page.locator('.revision-target-focus').waitFor();
+  expect(await panel.locator('.revision-target-previews').getAttribute('open') === null, 'Excerpts start collapsed without hiding navigation');
+  expect(await panel.locator('.revision-target-link:visible').count() === 2, 'Every block in a multi-page comment has a directly visible navigation link');
+  async function expectFocusedTarget(targetIndex) {
+    const target = revision.comments[0].targets[targetIndex];
+    await page.waitForFunction(() => document.activeElement?.classList.contains('revision-target-focus'));
+    const focused = await page.locator('.revision-target-focus').evaluate(element => {
+      const copy = element.cloneNode(true);
+      copy.querySelectorAll('.revision-block-toggle,.heading-anchor,.collapse-toggle').forEach(control => control.remove());
+      const bounds = element.getBoundingClientRect();
+      return {
+        tag: element.localName, text: copy.textContent.trim().replace(/\s+/g, ' '),
+        revealed: !element.closest('.doc-section.collapsed'),
+        inViewport: bounds.bottom > 0 && bounds.top < innerHeight,
+      };
+    });
+    expect(focused.tag === target.tag && focused.text === target.text, 'Navigation highlights and focuses the exact anchored block');
+    expect(focused.revealed && focused.inViewport, 'The anchored block is revealed and scrolled into view');
+  }
+  await page.getByRole('button', { name: 'Collapse all sections', exact: true }).click();
+  await panel.getByRole('button', { name: /^View target 2:/ }).click();
+  await expectFocusedTarget(1);
+  expect((await page.locator('#document h1').textContent()) === 'Reader guide', 'Same-page navigation stays on the target page');
+  await panel.getByRole('button', { name: /^View target 1:/ }).focus();
+  await page.keyboard.press('Enter');
+  await expectFocusedTarget(0);
   expect((await page.locator('#document h1').textContent()) === 'Revisions', 'Target navigation returns to the original page');
+  await panel.locator('.revision-target-previews summary').click();
+  expect(await panel.locator('.revision-quote:visible').count() === 2, 'Saved excerpts remain available separately from navigation');
+  const secondSource = revision.sources.find(source => source.id === revision.comments[0].targets[1].sourceId);
+  for (const failure of ['stale', 'missing']) {
+    await page.evaluate(({ path, failure }) => {
+      window.__slateOriginalTargetFetch = window.fetch;
+      const sourceUrl = new URL(path, document.baseURI).href;
+      window.fetch = (input, options) => String(input) === sourceUrl
+        ? Promise.resolve(new Response('Changed source', { status: failure === 'missing' ? 404 : 200 }))
+        : window.__slateOriginalTargetFetch(input, options);
+    }, { path: secondSource.path, failure });
+    try {
+      await panel.getByRole('button', { name: /^View target 2:/ }).click();
+      await page.waitForFunction(() => document.querySelector('.revision-error').textContent.includes('stale or missing'));
+      expect((await page.locator('#document h1').textContent()) === 'Revisions', `${failure} sources are rejected without guessing a block`);
+    } finally {
+      await page.evaluate(() => { window.fetch = window.__slateOriginalTargetFetch; });
+    }
+  }
   await page.reload();
   await page.locator('#document h1').waitFor();
   await page.getByRole('button', { name: 'Open revisions', exact: true }).click();
@@ -152,6 +192,10 @@ export async function testRevisionsBrowser(page, { url, mode = 'workspace', scre
   expect(await panel.locator('.revision-comment').count() === 0, 'Archived feedback collapses out of the editor');
   await panel.locator('.revision-archived summary').click();
   await panel.locator('.revision-archived .revision-choice').filter({ hasText: name }).click();
+  expect(await panel.locator('.revision-target-link:visible').count() === 2, 'Archived comments retain direct block navigation without reopening');
+  await panel.getByRole('button', { name: /^View target 2:/ }).click();
+  await expectFocusedTarget(1);
+  expect((await panel.locator('.revision-meta').textContent()) === 'Archived', 'Inspecting an archived target does not reopen or change the revision');
   await panel.getByRole('button', { name: 'Reopen revision', exact: true }).click();
   await page.waitForFunction(() => document.querySelector('.revision-meta')?.textContent.startsWith('Active'));
   expect(await panel.locator('.revision-comment').count() === 1, 'Reopen preserves existing comments');
@@ -160,6 +204,11 @@ export async function testRevisionsBrowser(page, { url, mode = 'workspace', scre
   await panel.locator('#revision-comment-text').fill('A second comment after reopening.');
   await panel.getByRole('button', { name: 'Add comment', exact: true }).click();
   await page.waitForFunction(() => document.querySelector('.revision-comments h3')?.textContent === 'Comments (2)');
+  const singleComment = panel.locator('.revision-comment').last();
+  expect(await singleComment.locator('.revision-target-link:visible').count() === 1, 'A single-block comment exposes its destination immediately');
+  await singleComment.getByRole('button', { name: /^View target 1:/ }).click();
+  await page.waitForFunction(() => document.activeElement?.classList.contains('revision-target-focus'));
+  expect(await page.locator('.revision-target-focus').evaluate(element => element.localName === 'h1'), 'A single-block comment jumps to its anchored heading');
   await menuAction('Remove comment', 'Comment 2 actions');
   await panel.getByRole('button', { name: 'Confirm removal', exact: true }).click();
   await page.waitForFunction(() => document.querySelector('.revision-comments h3')?.textContent === 'Comments (1)');

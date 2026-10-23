@@ -403,8 +403,8 @@ export function attach({ navigate, reveal, hasPage }) {
       navigate(source.route);
     }), 'revision-target-link');
     link.setAttribute('aria-label', `View target ${index + 1}: ${source.title} / block ${target.ordinal + 1}`);
+    link.title = `Go to the anchored block: ${target.text.slice(0, 240) || `[${target.tag}]`}`;
     wrapper.append(link);
-    wrapper.append(node('p', target.text.slice(0, 240) || `[${target.tag}] ${target.html.slice(0, 240)}`, 'revision-quote'));
     return wrapper;
   }
 
@@ -649,12 +649,22 @@ export function attach({ navigate, reveal, hasPage }) {
       head.append(node('h4', `Comment ${index + 1}`));
       if (comment.status === 'addressed') head.append(node('span', 'Addressed', 'revision-comment-status'));
       card.append(head, node('p', comment.text, 'revision-comment-text'));
-      const targets = node('details', undefined, 'revision-targets');
-      const targetSummary = node('summary');
+      const targets = node('div', undefined, 'revision-targets');
+      const targetSummary = node('p', undefined, 'revision-target-count');
       const pageCount = new Set(comment.targets.map(target => revision.sources.find(source => source.id === target.sourceId).path)).size;
       targetSummary.append(icon('link'), node('span', `${comment.targets.length} block${comment.targets.length === 1 ? '' : 's'} on ${pageCount} page${pageCount === 1 ? '' : 's'}`));
       targets.append(targetSummary);
       comment.targets.forEach((target, targetIndex) => targets.append(targetButton(revision, target, targetIndex)));
+      const previews = node('details', undefined, 'revision-target-previews');
+      previews.append(node('summary', 'Show excerpts'));
+      comment.targets.forEach(target => {
+        const source = revision.sources.find(item => item.id === target.sourceId);
+        const excerpt = node('div', undefined, 'revision-target');
+        excerpt.append(node('p', `${source.title} / block ${target.ordinal + 1}`, 'revision-quote-label'),
+          node('p', target.text.slice(0, 240) || `[${target.tag}] ${target.html.slice(0, 240)}`, 'revision-quote'));
+        previews.append(excerpt);
+      });
+      targets.append(previews);
       card.append(targets);
       if (revision.status === 'active') {
         const edit = () => {
