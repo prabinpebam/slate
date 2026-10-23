@@ -1,14 +1,15 @@
 # Getting started
 
 > Add Slate unchanged, initialize a host, then author content beside its generated runtime.
-> A documentation host is a static directory: it needs HTTP, not a server-side application or build.
+> Reading works on any static HTTP host. Use Slate's local server to also save revisions
+> automatically in the parent project's fixed revision directory.
 
 ## Before you begin
 
 - Use a repository where you control the documentation content and publication policy.
 - Install Node.js to run initialization and runtime-management scripts. This site's build and CI use
   Node.js 22 or later.
-- Have a static HTTP server available; the examples below use Python.
+- Use Slate's built-in Node server for local reading and automatic revision persistence.
 - A normal host uses vendored runtime assets and does not require `npm install`.
   Chart generation, Canvas rebuilding, and some package validators need development dependencies.
 
@@ -34,8 +35,8 @@ Run from the consuming repository root:
 ```powershell
 git submodule add https://github.com/prabinpebam/slate.git slate
 node .\slate\scripts\init-project.mjs --repo . --host docs --project "Project name"
-python -m http.server 8080 --bind 127.0.0.1
-# Open http://127.0.0.1:8080/docs/
+node .\slate\scripts\serve-revisions.mjs --repo . --host docs --port 8765
+# Open http://127.0.0.1:8765/
 ```
 
 Copying the repository into `slate/` is an alternative to the first command.
@@ -47,6 +48,7 @@ Do not open the viewer using `file://`: fetching the manifest and pages requires
 repository/
   slate/                         unchanged package
   .github/skills/slate/SKILL.md   thin discovery adapter
+  .slate/revisions/              automatically saved revision JSON (created on first revision)
   docs/
     index.html                   host-owned reader entry
     landing.html                 host-owned starter content
@@ -59,6 +61,8 @@ repository/
 
 The package owns reusable capability. The host owns content, source authority, root entry page,
 configuration, theme, and policy. The adapter only points an agent at the canonical contract.
+Revision JSON belongs to the parent project, outside the package and generated documentation.
+See [Revisions](revisions.md) for selection, automatic persistence, and agent completion.
 
 ## Add a page
 

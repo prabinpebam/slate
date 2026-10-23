@@ -34,6 +34,7 @@ The full contribution rules are in
 | This site's guides, manifest, or publishing | `npm run test:site`, `npm run build:site`, and affected browser routes |
 | Runtime synchronization or initialization | `npm run test:runtime-host`, plus portability when copying or initialization changes |
 | Reader navigation or personas | `npm run test:navigation` or `npm run test:reader-personas`, then rendered checks |
+| Reader revisions or local persistence | `npm run test:revisions`, rendered selection/lifecycle checks, then runtime/site/portability checks when shared integration changes |
 | Excerpt attribution | Production attribution validator; mutation suite when its contract changes |
 | Canvas domain or application | `npm run test:canvas-contracts`, build, runtime check, and actual host browser checks |
 | Chart or SVG authoring | Corresponding chart/SVG tests, structural validation, and actual render inspection |

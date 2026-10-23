@@ -5,6 +5,7 @@
     { "path": "docs/getting-started.md", "title": "Getting started", "group": "Guides", "order": 1, "icon": "rocket_launch" },
     { "path": "docs/authoring.md", "title": "Authoring", "group": "Guides", "order": 2, "icon": "edit_note" },
     { "path": "docs/reader-guide.md", "title": "Reader guide", "group": "Guides", "order": 3, "icon": "menu_book" },
+    { "path": "docs/revisions.md", "title": "Revisions", "group": "Guides", "order": 3.5, "icon": "rate_review" },
     { "path": "docs/demos.md", "title": "Demo guide", "group": "Guides", "order": 4, "icon": "widgets" },
     { "path": "docs/github-pages.md", "title": "GitHub Pages", "group": "Publishing", "order": 5, "icon": "public" },
     { "path": "docs/maintaining.md", "title": "Maintaining Slate", "group": "Contributing", "order": 6, "icon": "build" },

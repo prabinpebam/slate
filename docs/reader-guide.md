@@ -72,6 +72,25 @@ The [component gallery](../demo/components.html) includes author and reviewer pe
 
 See the [demo guide](demos.md) to try these experiences.
 
+## Request changes with a revision
+
+Open **Revision** in the header and choose **New revision**. Select one or several documentation
+blocks, enter a comment, and keep navigating to collect more feedback across pages. The right pane
+keeps the selected revision and comments available. Use **Current revision** to switch between
+active revisions. The header's **Revision actions** menu groups rename, archive, agent handoff,
+and optional JSON backup tools; rename and archive open focused dialogs instead of permanent
+forms. Each comment has its own actions menu. Expand its block/page summary to inspect targets,
+or expand **Archived** to reopen earlier feedback.
+
+Slate's local server automatically writes JSON into `.slate/revisions/` at the parent project root,
+where an agent can discover it directly. You never need to save or export JSON for handoff. Plain
+static hosting supports reading but disables revision editing. Ask the agent to act on the revision,
+verify the changes, and archive it;
+archived feedback remains available in a collapsed group.
+
+See [Revisions](revisions.md) for precise targeting, the server/CLI commands, conflict recovery, and
+the agent completion procedure. Revisions request changes; they do not automatically edit sources.
+
 ## If something looks broken
 
 Check that the site is served over HTTP and that its manifest, content, and runtime files are

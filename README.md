@@ -21,9 +21,22 @@ over plain HTTP. Readers need no installation, and documentation hosts need no b
 | Presentations | Slide-like documents, presenter controls, and experimental manifest-driven motion |
 | Structured information | Read-only Canvas with nested groups, repeated placements, perspectives, search, and viewport controls |
 | Portable hosting | Vendored runtime assets, non-destructive initialization, and SHA-256 runtime drift checks |
+| Reader revisions | Multi-block, cross-page feedback automatically saved as parent-project JSON by the local server, plus agent archive tooling |
 
 The package is `@slate/docs`; [package.json](package.json) is the version authority.
 Canvas editing and authority-aware write-back are not implemented.
+Reader revisions collect feedback separately; they do not edit documentation or Canvas records.
+See the [revision workflow, architecture, and definition of done](docs/revisions.md).
+
+For a consuming repository's local reader, use Slate's server rather than a plain static server:
+
+```powershell
+node .\slate\scripts\serve-revisions.mjs --repo . --host docs --port 8765
+```
+
+Open `http://127.0.0.1:8765/`. Revisions save automatically in the parent repository at
+`.slate/revisions/<id>.json`; no downloads, save dialogs, or manual JSON handoff are required.
+Static hosting remains supported for reading; revision editing requires the local server.
 
 ## Explore the documentation
 

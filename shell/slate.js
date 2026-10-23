@@ -13,6 +13,8 @@
 
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+  const runtimeUrl = document.currentScript?.src;
+  let revisions = null;
 
   const state = {
     currentPath: null,
@@ -442,6 +444,7 @@
       // Move remaining nodes (drop the marker paragraph)
       const nodes = Array.from(bq.childNodes); let removedFirst = false;
       nodes.forEach(n => { if (!removedFirst && n === first) { removedFirst = true; return; } div.appendChild(n); });
+      revisions?.replaceElement(bq, div);
       bq.replaceWith(div);
     });
   }
@@ -1353,8 +1356,10 @@
     // images are not fetched with their raw, pre-rewrite src; postProcess fixes
     // the paths before the nodes are attached, so each asset is fetched once.
     const parsed = new DOMParser().parseFromString(renderToHtml(path, entry.content), 'text/html');
+    revisions?.capture(parsed.body, { route: path, path: joinRoot(path), title: entry.title, content: entry.content });
     postProcess(parsed.body, path);
     while (parsed.body.firstChild) body.appendChild(parsed.body.firstChild);
+    revisions?.mount();
     // Pager appended after body
     article.insertAdjacentHTML('beforeend', renderPager(path));
     article.querySelectorAll('.pager a').forEach(a => a.addEventListener('click', (e) => { e.preventDefault(); navigateTo(a.dataset.path); }));
@@ -1798,7 +1803,6 @@
       }
     });
     document.addEventListener('click', (e) => { if (!e.target.closest('.search-container')) $('.search-results').classList.remove('visible'); });
-    window.addEventListener('hashchange', onRoute);
   }
   function firstPath() { return state.orderedPaths[0] || [...state.docs.keys()][0]; }
   function onRoute() {
@@ -1823,10 +1827,21 @@
     initBackToTop();
     const ok = await discover();
     if (!ok) { if (location.protocol === 'file:') showNotice(); else $('#document').innerHTML = '<div class="empty-state"><h2>No content found</h2><p>Add a docs-manifest.json or a README.md.</p></div>'; return; }
+    try {
+      const revisionModule = await import(new URL('revisions.js', runtimeUrl).href);
+      revisions = revisionModule.attach({ navigate: navigateTo, reveal: expandToTarget, hasPage: path => state.docs.has(path) });
+    } catch (error) {
+      console.error('Slate revision tools failed to load:', error);
+      const unavailable = document.createElement('button');
+      unavailable.textContent = 'Revisions unavailable';
+      unavailable.addEventListener('click', () => alert('Revision tools could not load. Check that the complete Slate runtime is synchronized and refresh.'));
+      $('.header').appendChild(unavailable);
+    }
     buildFileTree();
     renderNav();
     initSidebarVisibility();
     buildSearchIndex();
+    window.addEventListener('hashchange', onRoute);
     onRoute();
     if (!state.currentPath) navigateTo(state.landing || firstPath());
   }

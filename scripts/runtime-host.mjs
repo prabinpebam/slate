@@ -5,7 +5,7 @@ import process from "node:process";
 import { fileURLToPath } from "node:url";
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const runtimeFiles = ["shell/slate.css", "shell/presentation.js", "shell/slate.js"];
+const runtimeFiles = ["shell/slate.css", "shell/presentation.js", "shell/slate.js", "shell/revisions.js", "shell/revisions-core.js"];
 
 function toPosix(value) {
   return value.split(path.sep).join("/");

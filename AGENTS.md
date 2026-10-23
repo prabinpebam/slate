@@ -10,7 +10,7 @@ whole, runs the initializer, and gets a working documentation viewer plus an aut
 This repository owns only generic capability. It never owns any host's content, branding,
 authority, or policy.
 
-Package identity is `@slate/docs`, currently version `0.11.1`.
+Package identity is `@slate/docs`, currently version `0.12.0`.
 
 ## Start here
 
@@ -22,6 +22,9 @@ Read these in order before changing anything:
 3. `components/README.md` - the component catalog and few-shot patterns.
 4. `visualization/README.md` - the bundled visualization subskills.
 5. `docs/canvas-capability-spec.md` - the Slate Canvas contract.
+6. For reader revisions, `docs/revisions.md` and the "Acting on reader revisions" procedure in
+   `SKILL.md`. Discover parent-project `.slate/revisions/*.json`, act on open comments, verify, and archive with
+   the version read before acting. Never archive unresolved feedback or guess stale targets.
 
 ## Ownership boundary
 

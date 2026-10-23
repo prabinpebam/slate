@@ -42,7 +42,7 @@ function discoveryAdapter(repoRoot, sourceRoot) {
   const skillPath = path.relative(adapterRoot, path.join(sourceRoot, "SKILL.md")).split(path.sep).join("/");
   return `---
 name: slate
-description: "Use when: creating, converting, reviewing, or updating documentation, research, references, benchmarks, presentations, or a Slate documentation site. Loads the repository's canonical Slate system and skill."
+description: "Use when: creating, converting, reviewing, or updating documentation, research, references, benchmarks, presentations, or a Slate documentation site; or acting on Slate revisions and block comments. Loads the repository's canonical Slate system and skill."
 argument-hint: "Documentation task"
 user-invocable: true
 disable-model-invocation: false
