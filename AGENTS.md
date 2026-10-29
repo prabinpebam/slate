@@ -10,7 +10,7 @@ whole, runs the initializer, and gets a working documentation viewer plus an aut
 This repository owns only generic capability. It never owns any host's content, branding,
 authority, or policy.
 
-Package identity is `@slate/docs`, currently version `0.11.1`.
+Package identity is `@slate/docs`, currently version `0.11.2` (unreleased installer contract).
 
 ## Start here
 

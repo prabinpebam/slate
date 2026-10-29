@@ -26,7 +26,7 @@ function listFiles(directory) {
     .sort((left, right) => left.localeCompare(right));
 }
 
-function sourceRuntimeFiles(sourceRoot = packageRoot) {
+export function sourceRuntimeFiles(sourceRoot = packageRoot) {
   return [
     ...runtimeFiles,
     ...listFiles(path.join(sourceRoot, "shell", "canvas"))

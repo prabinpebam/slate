@@ -76,6 +76,45 @@ Run `npm run test:navigation` for the link-policy checks.
 
 ## Adopt Slate in your repository
 
+### Noninteractive installer contract (unreleased)
+
+```powershell
+node scripts\init-project.mjs --repo <project> --for copilot --dry-run --json
+node scripts\init-project.mjs --repo <project> --for copilot --json
+node scripts\init-project.mjs --repo <project> --for copilot --uninstall --json
+```
+
+Choose `--for copilot,claude,agents` explicitly; `claude-code` maps to `claude`,
+and `codex`/`cursor` map to `agents`. Slate supports project scope only. The CLI
+installs the complete authoring package under `.kits/slate/`, the documentation
+host (`--host docs` by default), and discovery adapters. `--project` names the site.
+Existing authored pages, configuration and theme files are kept, not claimed.
+The existing importable `initializeProject` API is unchanged; the safe CLI is the
+contract entry point.
+
+JSON has `status`, `plan`, `written`, `changed` and `next`. Plans enumerate every
+file and prior/result hash, declare `writes-project-files` and no network use, and
+dry runs write nothing. `--approve-plan <plan.digest>` refuses changes since review.
+Exit codes are 0 (done), 1 (error), 2 (decision needed).
+
+The `.kit-state/slate.json` record keeps original bytes and directory ownership.
+Repeated installation changes nothing. Edited runtime or newly authored starter
+content is never silently overwritten or deleted: resolve it or keep the kit.
+Uninstall restores recorded originals and only removes owned, unchanged files. It
+never touches a file it did not record, such as starter content that existed before
+installation or a later `CLAUDE.md`. Where a file also holds owner text or another
+kit's marked section, it removes only Slate's section. Paths reject traversal and links, and caught failures
+roll back. Preserve recovery originals when an error names them; recovery from
+power loss is manual. The standalone contract engine is vendored, not a dependency
+on another kit. Run `npm run test:install-contract` for the real-installer checks.
+
+These are source changes for the next release, not a claim that existing pinned
+revisions support the contract.
+
+The installer copies only files listed in `package-files.json`, never arbitrary untracked files
+from its checkout. Maintainers review source additions before regenerating that
+list with `node scripts/package-files.mjs`; `--check` detects stale lists.
+
 ### 1. Add the complete package
 
 From the consuming repository root, pin Slate as a submodule:
@@ -90,12 +129,17 @@ Do not copy only selected components or duplicate the package under agent discov
 ### 2. Initialize a documentation host
 
 ```powershell
-node .\slate\scripts\init-project.mjs --repo . --host docs --project "Project name"
+node .\slate\scripts\init-project.mjs --repo . --for copilot --host docs --project "Project name"
 ```
 
 The initializer creates host-owned content, configuration, an entry page, and a thin
 `.github/skills/slate/SKILL.md` discovery adapter. It preserves existing host-owned files while
 refreshing the generated runtime.
+
+Contract-managed hosts should update through this initializer again, so their
+ownership record stays current. Use the runtime checker from `.kits/slate/` for
+those hosts. The direct synchronization commands below remain for API-initialized,
+unmanaged hosts; using them to bypass a contract conflict is not safe.
 
 ### 3. Author and preview
 

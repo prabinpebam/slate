@@ -3,6 +3,8 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 import { syncRuntimeHost } from "./runtime-host.mjs";
+import { contract } from "./project-contract.mjs";
+import { output } from "./install-contract.mjs";
 
 const defaultSourceRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -123,12 +125,5 @@ function argumentValue(name) {
 
 const isMain = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 if (isMain) {
-  const repoRoot = path.resolve(argumentValue("--repo") || path.join(defaultSourceRoot, ".."));
-  const result = initializeProject({
-    repoRoot,
-    host: argumentValue("--host") || "docs",
-    projectName: argumentValue("--project") || "Project Documentation",
-  });
-  console.log(`Slate documentation initialized at ${path.relative(repoRoot, result.hostRoot) || "."}.`);
-  console.log(`Created ${result.created.length} host-owned files; synchronized ${result.manifest.files.length} runtime files.`);
+  process.exitCode = output(() => contract(process.argv.slice(2)), process.argv.slice(2));
 }

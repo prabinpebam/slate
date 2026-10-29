@@ -33,7 +33,7 @@ Run from the consuming repository root:
 
 ```powershell
 git submodule add https://github.com/prabinpebam/slate.git slate
-node .\slate\scripts\init-project.mjs --repo . --host docs --project "Project name"
+node .\slate\scripts\init-project.mjs --repo . --for copilot --host docs --project "Project name"
 python -m http.server 8080 --bind 127.0.0.1
 # Open http://127.0.0.1:8080/docs/
 ```
@@ -45,7 +45,9 @@ Do not open the viewer using `file://`: fetching the manifest and pages requires
 
 ```text
 repository/
-  slate/                         unchanged package
+  slate/                         pinned source checkout
+  .kits/slate/                   installed complete authoring package
+  .kit-state/slate.json          exact installer ownership record
   .github/skills/slate/SKILL.md   thin discovery adapter
   docs/
     index.html                   host-owned reader entry
@@ -98,7 +100,18 @@ reader and Canvas load the same theme.
 
 ## Update the runtime safely
 
-After updating the pinned Slate package, run:
+For a contract-managed host, update through the installer so its ownership record
+stays current. Keep the same host and agent arguments:
+
+```powershell
+node .\slate\scripts\init-project.mjs --repo . --for copilot --host docs --project "Project name" --dry-run --json
+node .\slate\scripts\init-project.mjs --repo . --for copilot --host docs --project "Project name" --json
+node .\.kits\slate\scripts\runtime-host.mjs check --repo . --host docs
+```
+
+Edited managed files stop the update without being overwritten. Resolve them
+before proceeding. Hosts initialized through the older importable API, without a
+kit ownership record, can still synchronize directly after updating their source:
 
 ```powershell
 node .\slate\scripts\runtime-host.mjs sync --repo . --host docs
